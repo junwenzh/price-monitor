@@ -1,17 +1,29 @@
-import express from 'express';
+import path from 'path';
+import express, { Request, Response, NextFunction } from 'express';
 import { test } from './utils/scraper';
 
 const app = express();
-const port = 3000;
+const port = 8084;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
+if (process.env.NODE_ENV !== 'DEVELOPMENT') {
+  app.use(express.static(__dirname));
+
+  app.get('*', (req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/api/')) {
+      next();
+    } else {
+      res.sendFile(path.join(__dirname, 'index.html'));
+    }
+  });
+}
+
+app.get('/api/scrape', async (req: Request, res: Response) => {
+  const content = await test();
+  res.send(content);
 });
 
-app.get('/scrape', async (req, res) => {
-  const content = await test();
-  // console.log(content);
-  res.send(content);
+app.get('/api/*', (req: Request, res: Response) => {
+  res.status(404).json({ message: 'API route not found' });
 });
 
 app.listen(port, () => {
