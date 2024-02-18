@@ -35,6 +35,7 @@ export default function App() {
 
   return (
     <div>
+      <div className="text-2xl">Price Monitor</div>
       <div id="shoppingsite" dangerouslySetInnerHTML={{ __html: html }}></div>
     </div>
   );
