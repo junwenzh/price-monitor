@@ -11,6 +11,9 @@ module.exports = {
   mode: process.env.NODE_ENV,
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
+    alias: {
+      '@': path.resolve(__dirname, 'src/'),
+    },
   },
   module: {
     rules: [
