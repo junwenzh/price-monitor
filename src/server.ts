@@ -1,11 +1,12 @@
+import fetchRouter from '@/routes/fetchRouter';
+import { test } from '@/utils/scraper';
+import express, { NextFunction, Request, Response } from 'express';
 import path from 'path';
-import express, { Request, Response, NextFunction } from 'express';
-import { test } from './utils/scraper';
 
 const app = express();
 const port = 8084;
 
-if (process.env.NODE_ENV !== 'DEVELOPMENT') {
+if (process.env.NODE_ENV !== 'development') {
   app.use(express.static(__dirname));
 
   app.get('*', (req: Request, res: Response, next: NextFunction) => {
@@ -21,6 +22,8 @@ app.get('/api/scrape', async (req: Request, res: Response) => {
   const content = await test();
   res.send(content);
 });
+
+app.use('/api/fetch', fetchRouter);
 
 app.get('/api/*', (req: Request, res: Response) => {
   res.status(404).json({ message: 'API route not found' });
