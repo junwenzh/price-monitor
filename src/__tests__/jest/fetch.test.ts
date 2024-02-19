@@ -1,18 +1,21 @@
-import axios from 'axios';
 import { fetch } from '@/utils/fetch';
+import axios from 'axios';
 
 jest.mock('axios');
 const mockedAxios = jest.mocked(axios);
 
 describe('fetch', () => {
   it('successfully fetches data', async () => {
-    const fakeResponse = 'fake response';
+    const fakeResponse = {
+      status: 200,
+      data: 'data',
+    };
     mockedAxios.get.mockResolvedValue(fakeResponse);
 
     const url = 'http://test.com';
     const result = await fetch(url);
 
-    expect(result).toEqual(fakeResponse);
+    expect(result).toEqual(fakeResponse.data);
     expect(mockedAxios.get).toHaveBeenCalledWith(url, {
       headers: {
         'User-Agent':
