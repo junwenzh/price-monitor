@@ -1,6 +1,7 @@
 import path from 'path';
 import express, { Request, Response, NextFunction } from 'express';
 import { test } from './utils/scraper';
+import { fetch } from './utils/fetch';
 
 const app = express();
 const port = 8084;
@@ -20,6 +21,18 @@ if (process.env.NODE_ENV !== 'DEVELOPMENT') {
 app.get('/api/scrape', async (req: Request, res: Response) => {
   const content = await test();
   res.send(content);
+});
+
+app.get('/api/fetch', async (req: Request, res: Response) => {
+  const url = req.query.url as string | undefined;
+
+  if (!url) {
+    res.json({ message: 'No url provided' });
+  }
+
+  const response = await fetch(url as string);
+
+  res.send(response);
 });
 
 app.get('/api/*', (req: Request, res: Response) => {
