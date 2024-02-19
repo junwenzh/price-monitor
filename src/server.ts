@@ -6,7 +6,7 @@ import path from 'path';
 const app = express();
 const port = 8084;
 
-if (process.env.NODE_ENV !== 'DEVELOPMENT') {
+if (process.env.NODE_ENV !== 'development') {
   app.use(express.static(__dirname));
 
   app.get('*', (req: Request, res: Response, next: NextFunction) => {
