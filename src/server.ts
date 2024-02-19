@@ -1,4 +1,4 @@
-import { fetch } from '@/utils/fetch';
+import fetchRouter from '@/routes/fetchRouter';
 import { test } from '@/utils/scraper';
 import express, { NextFunction, Request, Response } from 'express';
 import path from 'path';
@@ -23,24 +23,12 @@ app.get('/api/scrape', async (req: Request, res: Response) => {
   res.send(content);
 });
 
-app.get('/api/fetch', async (req: Request, res: Response) => {
-  const url = req.query.url as string | undefined;
-
-  if (!url) {
-    res.json({ message: 'No url provided' });
-  }
-
-  const response = await fetch(url as string);
-
-  res.send(response);
-});
+app.use('/api/fetch', fetchRouter);
 
 app.get('/api/*', (req: Request, res: Response) => {
   res.status(404).json({ message: 'API route not found' });
 });
 
-const server = app.listen(port, () => {
+app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
-
-export default server;
