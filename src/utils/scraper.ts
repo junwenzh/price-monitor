@@ -1,10 +1,11 @@
-import { chromium } from 'playwright';
-import cheerio from 'cheerio';
+import { chromium } from 'playwright-extra';
+import stealth from 'puppeteer-extra-plugin-stealth';
 
 async function test() {
+  chromium.use(stealth());
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('https://target.com');
+  await page.goto('https://fragrancenet.com');
 
   const content = await page.content();
   // const bodyHtml = await page.locator('xpath=//html/body');
