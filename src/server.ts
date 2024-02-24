@@ -1,5 +1,5 @@
 import fetchRouter from '@/routes/fetchRouter';
-import { test } from '@/utils/scraper';
+import playwrightRouter from '@/routes/playwrightRouter';
 import express, { NextFunction, Request, Response } from 'express';
 import path from 'path';
 
@@ -18,10 +18,7 @@ if (process.env.NODE_ENV !== 'development') {
   });
 }
 
-app.get('/api/scrape', async (req: Request, res: Response) => {
-  const content = await test();
-  res.send(content);
-});
+app.use('/api/scrape', playwrightRouter);
 
 app.use('/api/fetch', fetchRouter);
 
