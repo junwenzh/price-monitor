@@ -1,7 +1,8 @@
-import { chromium } from 'playwright';
-import cheerio from 'cheerio';
+import { chromium } from 'playwright-extra';
+import stealth from 'puppeteer-extra-plugin-stealth';
 
 async function test() {
+  chromium.use(stealth());
   const browser = await chromium.launch();
   const context = await browser.newContext();
   await context.addInitScript(
