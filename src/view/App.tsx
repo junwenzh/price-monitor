@@ -17,19 +17,30 @@ export default function App() {
 
   useEffect(() => {
     const div = document.querySelector('#shoppingsite');
+
     const aTags = div?.querySelectorAll('a');
+
     aTags?.forEach(tag => {
       tag.addEventListener('click', event => {
         event.preventDefault();
       });
       tag.removeAttribute('href');
     });
+
     div?.addEventListener('click', event => {
       const element = event.target;
       console.log(element);
       //   const xpath = getXPath(element);
       const selectedCss = getCssSelector(element);
       console.log(selectedCss);
+    });
+
+    const allEles = div?.querySelectorAll('*');
+
+    allEles?.forEach(ele => {
+      if (ele.childElementCount === 0) {
+        ele.classList.add('hover:border-2', 'hover:border-orange-300');
+      }
     });
   }, [html]);
 

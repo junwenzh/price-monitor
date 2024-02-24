@@ -3,8 +3,12 @@ import cheerio from 'cheerio';
 
 async function test() {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
-  await page.goto('https://target.com');
+  const context = await browser.newContext();
+  await context.addInitScript(
+    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+  );
+  const page = await context.newPage();
+  await page.goto('https://fragrancenet.com');
 
   const content = await page.content();
   // const bodyHtml = await page.locator('xpath=//html/body');
