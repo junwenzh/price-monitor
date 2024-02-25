@@ -22,7 +22,7 @@ module.exports = {
     'prettier/prettier': 'error', // Ensures that prettier rules are treated as ESLint errors
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }], // Allows unused variables when they are prefixed with an underscore
     '@typescript-eslint/no-explicit-any': 'off', // Disables the rule for using 'any' type
-    'no-console': 'allow', // Warns about console.log usage
+    'no-console': 'off', // Warns about console.log usage
     'no-process-env': 'off', // Allows the use of process.env
     eqeqeq: ['error', 'always'], // Enforces the use of === and !==
   },
