@@ -1,5 +1,4 @@
-import getCssSelector from 'css-selector-generator';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 export default function App() {
   const [url, setUrl] = useState(
@@ -8,36 +7,36 @@ export default function App() {
   const [html, setHtml] = useState('');
   const [cssSelector, setCssSelector] = useState('');
 
-  useEffect(() => {
-    const div = document.querySelector('#shoppingsite');
+  // useEffect(() => {
+  //   const div = document.querySelector('#shoppingsite');
 
-    div?.addEventListener('click', event => {
-      const element = event.target;
-      const selectedCss = getCssSelector(element);
-      setCssSelector(selectedCss);
-    });
+  //   div?.addEventListener('click', event => {
+  //     const element = event.target;
+  //     const selectedCss = getCssSelector(element);
+  //     setCssSelector(selectedCss);
+  //   });
 
-    const shoppingSite = document.querySelector('#shoppingsite')!;
-    const allEles = shoppingSite.querySelectorAll('*');
-    const allElesArray = Array.from(allEles!);
+  //   const shoppingSite = document.querySelector('#shoppingsite')!;
+  //   const allEles = shoppingSite.querySelectorAll('*');
+  //   const allElesArray = Array.from(allEles!);
 
-    const textEles = allElesArray.filter(el => {
-      const children = el.childNodes; // direct children(
-      const childrenArray = Array.from(children);
-      const hasTextChild = childrenArray.some(node => {
-        if (node.nodeType === 3 && node.textContent?.trim() !== '') {
-          return true;
-        }
-        return false;
-      });
-      return hasTextChild;
-    });
+  //   const textEles = allElesArray.filter(el => {
+  //     const children = el.childNodes; // direct children(
+  //     const childrenArray = Array.from(children);
+  //     const hasTextChild = childrenArray.some(node => {
+  //       if (node.nodeType === 3 && node.textContent?.trim() !== '') {
+  //         return true;
+  //       }
+  //       return false;
+  //     });
+  //     return hasTextChild;
+  //   });
 
-    textEles.forEach(ele => {
-      // requires tailwind on the front end
-      ele.classList.add('hover:border-2', 'hover:border-orange-300');
-    });
-  }, [html]);
+  //   textEles.forEach(ele => {
+  //     // requires tailwind on the front end
+  //     ele.classList.add('hover:border-2', 'hover:border-orange-300');
+  //   });
+  // }, [html]);
 
   const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(event.target.value);
@@ -87,7 +86,7 @@ export default function App() {
           fill="none"
         >
           <circle
-            class="opacity-25"
+            className="opacity-25"
             cx="12"
             cy="12"
             r="10"
@@ -95,14 +94,19 @@ export default function App() {
             stroke-width="4"
           ></circle>
           <path
-            class="opacity-75"
+            className="opacity-75"
             fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
         </svg>
         <span>Loading...</span>
       </div>
-      <div id="shoppingsite" dangerouslySetInnerHTML={{ __html: html }}></div>
+      {/* <div
+        id="shoppingsite"
+        dangerouslySetInnerHTML={{ __html: html }}
+        // className="w-iphone h-iphone"
+      ></div> */}
+      <img src={`data:image/jpeg;base64,${html}`} className="w-iphone" />
     </div>
   );
 }
