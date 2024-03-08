@@ -1,42 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function App() {
   const [url, setUrl] = useState(
     'https://www.amazon.com/Spicy-Chili-Crisp-Family-Restaurant/dp/B06XYTSGDP'
   );
-  const [html, setHtml] = useState('');
-  const [cssSelector, setCssSelector] = useState('');
-
-  // useEffect(() => {
-  //   const div = document.querySelector('#shoppingsite');
-
-  //   div?.addEventListener('click', event => {
-  //     const element = event.target;
-  //     const selectedCss = getCssSelector(element);
-  //     setCssSelector(selectedCss);
-  //   });
-
-  //   const shoppingSite = document.querySelector('#shoppingsite')!;
-  //   const allEles = shoppingSite.querySelectorAll('*');
-  //   const allElesArray = Array.from(allEles!);
-
-  //   const textEles = allElesArray.filter(el => {
-  //     const children = el.childNodes; // direct children(
-  //     const childrenArray = Array.from(children);
-  //     const hasTextChild = childrenArray.some(node => {
-  //       if (node.nodeType === 3 && node.textContent?.trim() !== '') {
-  //         return true;
-  //       }
-  //       return false;
-  //     });
-  //     return hasTextChild;
-  //   });
-
-  //   textEles.forEach(ele => {
-  //     // requires tailwind on the front end
-  //     ele.classList.add('hover:border-2', 'hover:border-orange-300');
-  //   });
-  // }, [html]);
+  const [img, setImg] = useState('');
 
   const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(event.target.value);
@@ -51,10 +19,21 @@ export default function App() {
     fetch(`/api/scrape?url=${url}`)
       .then(response => response.text())
       .then(data => {
-        setHtml(data);
+        setImg(data);
         loadingEle?.classList.add('hidden');
       });
   };
+
+  useEffect(() => {
+    const shoppingSite = document.querySelector('#shoppingsite') as HTMLElement;
+
+    shoppingSite.addEventListener('click', (event: MouseEvent) => {
+      const x: number = event.pageX;
+      const y: number = event.pageY;
+
+      console.log(`clicked on ${x}, ${y}`);
+    });
+  }, []);
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -101,12 +80,9 @@ export default function App() {
         </svg>
         <span>Loading...</span>
       </div>
-      {/* <div
-        id="shoppingsite"
-        dangerouslySetInnerHTML={{ __html: html }}
-        // className="w-iphone h-iphone"
-      ></div> */}
-      <img src={`data:image/jpeg;base64,${html}`} className="w-iphone" />
+      <div id="shoppingsite">
+        <img src={`data:image/jpeg;base64,${img}`} className="w-ipad" />
+      </div>
     </div>
   );
 }

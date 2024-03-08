@@ -5,6 +5,7 @@ module.exports = {
     extend: {
       width: {
         iphone: '393px',
+        ipad: '810px',
       },
       height: {
         iphone: '852px',

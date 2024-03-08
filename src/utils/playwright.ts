@@ -5,10 +5,14 @@ import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
 
 async function scrape(url: string) {
-  const iphone = devices['iPhone 13'];
+  const ipad = devices['iPad (gen 7)'];
   chromium.use(stealth());
   const browser = await chromium.launch();
-  const context = await browser.newContext({ ...iphone });
+  const context = await browser.newContext({
+    ...ipad,
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/122.0.6261.62 Mobile/15E148 Safari/604.1',
+  });
   await context.addInitScript(
     "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
   );
@@ -17,112 +21,81 @@ async function scrape(url: string) {
     blocker.enableBlockingInPage(page);
   });
   await page.goto(url);
-  // await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
+  await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
   await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
 
   const screenshotBuffer = await page.screenshot({ fullPage: true });
   const screenshotString = screenshotBuffer.toString('base64');
 
-  await page.evaluate(disableJS);
-  await page.evaluate(disableLinks);
-  await page.evaluate(disableImages);
-  await page.evaluate(disablePictures);
-  await page.evaluate(disableSvgs);
-  await page.evaluate(disableInputsAndButtons);
-  await page.evaluate(disableHeaderFooterNav);
+  const elements = await page.evaluate(getElementsFromPoint);
 
-  const html = await page.content();
-  const htmlWithoutComments = removeComments(html);
+  console.log(elements);
 
   await context.close();
   await browser.close();
-  // return htmlWithoutComments;
+
   return screenshotString;
 }
 
-function disableJS() {
-  const scriptEles = document.querySelectorAll('script');
-  scriptEles.forEach(script => script.remove());
+function getAllElementsFromPoint(x: number, y: number) {
+  const elements: HTMLElement[] = [];
+  const previousPointerEvents = [];
+  let currentElement = document.elementFromPoint(x, y) as HTMLElement;
 
-  const javascriptEles = document.querySelectorAll(
-    '[href^="javascript:"], [src^="javascript:"], [action^="javascript:"]'
-  );
-  javascriptEles.forEach(el => {
-    el.removeAttribute('href');
-    el.removeAttribute('src');
-    el.removeAttribute('action');
-  });
+  // Temporarily disable pointer events to all elements on the stack
+  while (currentElement && !elements.includes(currentElement)) {
+    // Push the element to the result list
+    elements.push(currentElement);
+    // Save current pointer-events style
+    previousPointerEvents.push(currentElement.style.pointerEvents);
+    // Disable pointer-events to "dig" through to lower elements
+    currentElement.style.pointerEvents = 'none';
+    currentElement = document.elementFromPoint(x, y) as HTMLElement;
+  }
 
-  const activeEles = document.querySelectorAll(
-    '[onclick], [onload], [onerror]'
-  );
-  activeEles.forEach(el => {
-    el.removeAttribute('onclick');
-    el.removeAttribute('onload');
-    el.removeAttribute('onerror');
-  });
+  return elements;
 }
 
-function disableLinks() {
-  const aTags = document.querySelectorAll('a');
-  aTags.forEach(tag => {
-    tag.addEventListener('click', event => {
-      event.preventDefault();
+function getElementsFromPoint() {
+  const x = 365;
+  const y = 308;
+  const elements: HTMLElement[] = [];
+  const previousPointerEvents = [];
+  let currentElement = document.elementFromPoint(x, y) as HTMLElement;
+
+  // Temporarily disable pointer events to all elements on the stack
+  while (currentElement && !elements.includes(currentElement)) {
+    // Push the element to the result list
+    elements.push(currentElement);
+    // Save current pointer-events style
+    previousPointerEvents.push(currentElement.style.pointerEvents);
+    // Disable pointer-events to "dig" through to lower elements
+    currentElement.style.pointerEvents = 'none';
+    currentElement = document.elementFromPoint(x, y) as HTMLElement;
+  }
+
+  const textEles = elements.filter(el => {
+    const children = el.childNodes; // direct children(
+    const childrenArray = Array.from(children);
+    const hasTextChild = childrenArray.some(node => {
+      if (node.nodeType === 3 && node.textContent?.trim() !== '') {
+        return true;
+      }
+      return false;
     });
-    tag.removeAttribute('href');
+    return hasTextChild;
   });
-}
 
-function disableImages() {
-  const imgEles = document.querySelectorAll('img');
-  imgEles.forEach(el => {
-    el.setAttribute('onerror', 'this.style.diplay="none"');
-    const width = el.offsetWidth;
-    const height = el.offsetHeight;
-    el.style.width = `${width}px`;
-    el.style.height = `${height}px`;
-    el.src = '';
-    el.srcset = '';
-    el.style.display = 'none';
-  });
-}
+  const texts: string[] = [];
 
-function disableSvgs() {
-  const svgEles = document.querySelectorAll('svg');
-  svgEles.forEach(svg => {
-    svg.style.display = 'none';
-  });
-}
-
-function disablePictures() {
-  const picEles = document.querySelectorAll('picture');
-  picEles.forEach(pic => {
-    const width = pic.offsetWidth;
-    const height = pic.offsetHeight;
-    pic.style.width = `${width}px`;
-    pic.style.height = `${height}px`;
-    pic.style.display = 'none';
-  });
-}
-
-function disableInputsAndButtons() {
-  const eles = document.querySelectorAll('input, button');
-  eles.forEach(el => {
-    if (el instanceof HTMLInputElement || el instanceof HTMLButtonElement) {
-      el.disabled = true;
+  textEles.forEach(el => {
+    const text = el.textContent;
+    if (text) {
+      texts.push(text);
     }
   });
-}
 
-function disableHeaderFooterNav() {
-  const eles = document.querySelectorAll('header, footer, nav');
-  eles.forEach(el => {
-    el.innerHTML = '';
-  });
-}
-
-function removeComments(html: string) {
-  return html.replace(/<!--[\s\S]*?-->/g, '');
+  return JSON.stringify(texts);
 }
 
 export { scrape };
