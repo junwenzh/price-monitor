@@ -5,6 +5,8 @@ export default function App() {
     'https://www.amazon.com/Spicy-Chili-Crisp-Family-Restaurant/dp/B06XYTSGDP'
   );
   const [img, setImg] = useState('');
+  const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
+  //const imageRef = useRef<HTMLImageElement>(null);
 
   const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(event.target.value);
@@ -24,15 +26,31 @@ export default function App() {
       });
   };
 
+  const handleCoordinatesSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const imageEle = document.querySelector('#screenshot')!;
+    const rect = imageEle.getBoundingClientRect()!;
+
+    const offsetCoords = {
+      x: coordinates.x - rect.x,
+      y: coordinates.y - rect.y,
+    };
+    // post coordinates to api
+    console.log('sending coordinates', offsetCoords);
+  };
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setCoordinates({
+      x: event.clientX,
+      y: event.clientY + window.scrollY,
+    });
+  };
+
   useEffect(() => {
     const shoppingSite = document.querySelector('#shoppingsite') as HTMLElement;
 
-    shoppingSite.addEventListener('click', (event: MouseEvent) => {
-      const x: number = event.pageX;
-      const y: number = event.pageY;
-
-      console.log(`clicked on ${x}, ${y}`);
-    });
+    shoppingSite.addEventListener('click', handleClick);
   }, []);
 
   return (
@@ -55,6 +73,17 @@ export default function App() {
           className="bg-blue-500 text-white px-4 py-2 rounded transition duration-150 ease-in-out active:bg-blue-600 active:scale-95"
         >
           Submit
+        </button>
+      </form>
+      <form
+        className="flex flex-col items-center gap-4 w-full"
+        onSubmit={handleCoordinatesSubmit}
+      >
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded transition duration-150 ease-in-out active:bg-blue-600 active:scale-95"
+        >
+          Send Coordinates
         </button>
       </form>
       <div id="loadingSpin" className="flex flex-row items-center hidden">
@@ -80,8 +109,16 @@ export default function App() {
         </svg>
         <span>Loading...</span>
       </div>
-      <div id="shoppingsite">
-        <img src={`data:image/jpeg;base64,${img}`} className="w-ipad" />
+      <div id="shoppingsite" className={img ? '' : 'hidden'}>
+        <div
+          className="absolute w-4 h-4 rounded bg-blue-500 opacity-50"
+          style={{ left: `${coordinates.x}px`, top: `${coordinates.y}px` }}
+        ></div>
+        <img
+          id="screenshot"
+          src={`data:image/jpeg;base64,${img}`}
+          className="w-ipad"
+        />
       </div>
     </div>
   );
