@@ -40,11 +40,35 @@ export default function App() {
     console.log('sending coordinates', offsetCoords);
   };
 
+  const getEle = (x: number, y: number) => {
+    const elems = document.elementsFromPoint(x, y); // array
+    // ##.##, $##.##
+    const priceEle = elems.find((element: Element) => {
+      // const text = (element as HTMLElement).innerText;
+      const children = Array.from(element.childNodes);
+      const textNodes = children.filter(
+        node => node.nodeType === Node.TEXT_NODE
+      );
+      const texts = textNodes.map(node => node.textContent?.trim());
+      const text = texts.join(' ');
+      const regex = /^\$?\d+(?:\.\d{1,2})?$/;
+      return regex.test(text);
+    });
+
+    if (priceEle) {
+      const price = (priceEle as HTMLElement).innerText;
+      console.log('price', price);
+    } else {
+      console.log('price', 'not found');
+    }
+  };
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setCoordinates({
       x: event.clientX,
       y: event.clientY + window.scrollY,
     });
+    getEle(event.clientX, event.clientY + window.scrollY);
   };
 
   useEffect(() => {
@@ -56,6 +80,12 @@ export default function App() {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="text-3xl my-4">Price Monitor</div>
+      <div>
+        inner div 100.00
+        <div>$100.00</div>
+        <div>100.00</div>
+        <div>Fail 100.00</div>
+      </div>
       <form
         className="flex flex-col items-center gap-4 w-full"
         onSubmit={handleUrlSubmit}
