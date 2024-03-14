@@ -18,7 +18,7 @@ export default function App() {
     loadingEle?.classList.remove('hidden');
 
     event.preventDefault();
-    fetch(`/api/scrape?url=${url}`)
+    fetch(`/api/scrape/1?url=${url}`)
       .then(response => response.text())
       .then(data => {
         setImg(data);
@@ -37,7 +37,14 @@ export default function App() {
       y: coordinates.y - rect.y,
     };
     // post coordinates to api
-    console.log('sending coordinates', offsetCoords);
+    // console.log('sending coordinates', offsetCoords);
+    const fetchUrl = `/api/scrape/2?url=${url}&x=${offsetCoords.x}&y=${offsetCoords.y}`;
+    console.log(fetchUrl);
+    fetch(fetchUrl)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+      });
   };
 
   const getEle = (x: number, y: number) => {
@@ -68,7 +75,9 @@ export default function App() {
       x: event.clientX,
       y: event.clientY + window.scrollY,
     });
-    getEle(event.clientX, event.clientY + window.scrollY);
+
+    console.log(event.clientX, event.clientY + window.scrollY);
+    // getEle(event.clientX, event.clientY + window.scrollY);
   };
 
   useEffect(() => {
