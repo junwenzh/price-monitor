@@ -3,25 +3,28 @@ import express, { Request, Response } from 'express';
 
 const router = express.Router();
 
-router.get('/1', async (req: Request, res: Response) => {
-  const url = req.query.url as string | undefined;
+router.post('/screenshot', async (req: Request, res: Response) => {
+  // const url = req.query.url as string | undefined;
+  const url = req.body.url as string;
+
+  console.log('get', url);
 
   if (!url) {
     res.json({ message: 'No url provided' });
   }
 
-  const response = await scrape(url as string);
+  const response = await scrape(url);
 
   res.send(response);
 });
 
-router.get('/2', async (req: Request, res: Response) => {
-  // const { url, x, y } = req.query;
-  const url = req.query.url as string;
-  const x = req.query.x as string;
-  const y = req.query.y as string;
+router.post('/coordinates', async (req: Request, res: Response) => {
+  // const { url, x, y } = req.body;
+  const url = req.body.url as string;
+  const x = req.body.x as string;
+  const y = req.body.y as string;
 
-  console.log(url, x, y);
+  console.log('post', url);
 
   if (!url || !x || !y) {
     return res.json({ message: 'Missing argument' });

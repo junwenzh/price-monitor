@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 
 export default function App() {
   const [url, setUrl] = useState(
-    'https://www.amazon.com/Spicy-Chili-Crisp-Family-Restaurant/dp/B06XYTSGDP'
+    'https://www.fragrancenet.com/perfume/dolce-and-gabbana/d-and-g-light-blue/edt#118661'
   );
   const [img, setImg] = useState('');
   const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
+  const [offsetCoords, setOffsetCoords] = useState({ x: 0, y: 0 });
+  // const [rect, setRect] = useState({ x: 0, y: 0 });
   //const imageRef = useRef<HTMLImageElement>(null);
 
   const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,7 +20,13 @@ export default function App() {
     loadingEle?.classList.remove('hidden');
 
     event.preventDefault();
-    fetch(`/api/scrape/1?url=${url}`)
+    fetch(`/api/scrape/screenshot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url }),
+    })
       .then(response => response.text())
       .then(data => {
         setImg(data);
@@ -26,21 +34,33 @@ export default function App() {
       });
   };
 
+  // useEffect(() => {
+  //   const imageEle = document.querySelector('#screenshot')!;
+  //   const clientRect = imageEle.getBoundingClientRect()!;
+
+  //   setRect(() => ({
+  //     x: clientRect.x,
+  //     y: clientRect.y,
+  //   }));
+
+  //   console.log(clientRect.x, clientRect.y);
+  // }, [img]);
+
   const handleCoordinatesSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const imageEle = document.querySelector('#screenshot')!;
-    const rect = imageEle.getBoundingClientRect()!;
-
-    const offsetCoords = {
-      x: coordinates.x - rect.x,
-      y: coordinates.y - rect.y,
-    };
     // post coordinates to api
     // console.log('sending coordinates', offsetCoords);
-    const fetchUrl = `/api/scrape/2?url=${url}&x=${offsetCoords.x}&y=${offsetCoords.y}`;
-    console.log(fetchUrl);
-    fetch(fetchUrl)
+
+    console.log(url);
+
+    fetch('/api/scrape/coordinates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url, ...offsetCoords }),
+    })
       .then(response => response.json())
       .then(data => {
         console.log(data);
@@ -71,12 +91,30 @@ export default function App() {
   };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setCoordinates({
+    const imageEle = document.querySelector('#screenshot')!;
+    const rect = imageEle.getBoundingClientRect()!;
+
+    console.log('rect', rect);
+    console.log('x', event.clientX);
+    console.log('y', event.clientY);
+    console.log('window scroll Y', window.scrollY);
+    console.log('rect y', rect.y);
+
+    const coords = {
       x: event.clientX,
       y: event.clientY + window.scrollY,
-    });
+    };
+    setCoordinates({ ...coords });
 
-    console.log(event.clientX, event.clientY + window.scrollY);
+    const offsetC = {
+      x: event.clientX - rect.x,
+      y: event.clientY + window.scrollY - (rect.y + window.scrollY),
+    };
+
+    setOffsetCoords({ ...offsetC });
+
+    console.log('coords', coords);
+    console.log('offset coords', offsetC);
     // getEle(event.clientX, event.clientY + window.scrollY);
   };
 

@@ -7,6 +7,8 @@ import stealth from 'puppeteer-extra-plugin-stealth';
 // import { getCssSelector } from 'css-selector-generator';
 
 async function scrape(url: string) {
+  console.log('playwright scrape1', url);
+
   const ipad = devices['iPad (gen 7)'];
   chromium.use(stealth());
   const browser = await chromium.launch();
@@ -22,9 +24,11 @@ async function scrape(url: string) {
   PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
     blocker.enableBlockingInPage(page);
   });
+
   await page.goto(url);
   await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
   await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
+  await page.waitForTimeout(1000);
 
   const screenshotBuffer = await page.screenshot({ fullPage: true });
   const screenshotString = screenshotBuffer.toString('base64');
@@ -38,6 +42,7 @@ async function scrape(url: string) {
 }
 
 async function scrape2({ url, x, y }: { url: string; x: number; y: number }) {
+  console.log('scrape2', url);
   const ipad = devices['iPad (gen 7)'];
   chromium.use(stealth());
   const browser = await chromium.launch();
@@ -67,7 +72,9 @@ async function scrape2({ url, x, y }: { url: string; x: number; y: number }) {
 }
 
 function getEle({ x, y }: { x: number; y: number }) {
-  const elems = document.elementsFromPoint(x, y); // array
+  window.scrollTo(0, y);
+
+  const elems = document.elementsFromPoint(x, 0); // array
   // ##.##, $##.##
   const priceEle = elems.find((element: Element) => {
     // const text = (element as HTMLElement).innerText;

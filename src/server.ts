@@ -6,6 +6,8 @@ import path from 'path';
 const app = express();
 const port = 8084;
 
+app.use(express.json());
+
 if (process.env.NODE_ENV !== 'development') {
   app.use(express.static(__dirname));
 
