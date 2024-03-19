@@ -1,10 +1,24 @@
 import { PlaywrightBlocker } from '@cliqz/adblocker-playwright';
 import fetch from 'cross-fetch';
-import { devices } from 'playwright';
+import { Browser, BrowserContext, Page, devices } from 'playwright';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
 // import { CssSelector } from 'css-selector-generator/types/types';
 // import { getCssSelector } from 'css-selector-generator';
+
+class PlaywrightConnection {
+  private browser?: Browser;
+  private context?: BrowserContext;
+  private pages: Record<string, Page> = {};
+
+  async getBrowser(): Promise<Browser> {}
+
+  async getContext(): Promise<BrowserContext> {}
+
+  async getPage(url: string, scrollY: int = 0): Promise<Page> {}
+}
+
+const playwrightConnection = new PlaywrightConnection();
 
 async function scrape(url: string) {
   console.log('playwright scrape1', url);
@@ -105,4 +119,4 @@ function getEle({ x, y }: { x: number; y: number }) {
   }
 }
 
-export { scrape, scrape2 };
+export { playwrightConnection, scrape, scrape2 };
