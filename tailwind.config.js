@@ -6,9 +6,11 @@ module.exports = {
       width: {
         iphone: '393px',
         ipad: '810px',
+        desktop: '1000px',
       },
       height: {
         iphone: '852px',
+        desktop: '1000px',
       },
     },
   },
