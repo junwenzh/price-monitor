@@ -127,12 +127,6 @@ export default function App() {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="text-3xl my-4">Price Monitor</div>
-      <div>
-        inner div 100.00
-        <div>$100.00</div>
-        <div>100.00</div>
-        <div>Fail 100.00</div>
-      </div>
       <form
         className="flex flex-col items-center gap-4 w-full"
         onSubmit={handleUrlSubmit}
@@ -194,7 +188,7 @@ export default function App() {
         <img
           id="screenshot"
           src={`data:image/jpeg;base64,${img}`}
-          className="w-ipad"
+          className="w-desktop h-desktop min-w-desktop"
         />
       </div>
     </div>

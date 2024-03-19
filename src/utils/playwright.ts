@@ -6,6 +6,49 @@ import stealth from 'puppeteer-extra-plugin-stealth';
 // import { CssSelector } from 'css-selector-generator/types/types';
 // import { getCssSelector } from 'css-selector-generator';
 
+// export a single instance of a browser and context
+// you can get a new page from this context
+// you can find an existing page
+
+class PlaywrightConnection() {
+  constructor() {
+    this.browser = undefined;
+    this.context = undefined;
+    this.pages = {};
+  }
+
+  startConnection() {
+    // if this.browser === undefined, start a new browser
+    const browser = await chromium.launch();
+    this.browser = browser;
+  }
+
+  startContext() {
+    const context = await this.browser.newContext({
+      viewport: {
+        width: 1000,
+        height: 1000,
+      },
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/122.0.6261.62 Mobile/15E148 Safari/604.1',
+    });
+    await context.addInitScript(
+      "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+    );
+    this.context = context;
+  }
+
+  getNewPage() {
+    const page = await this.context.newPage();
+    this.page['url'] = page;
+    return page
+  }
+
+  getExistingPage(url) {}
+
+}
+
+
 async function scrape(url: string) {
   console.log('playwright scrape1', url);
 
@@ -13,7 +56,10 @@ async function scrape(url: string) {
   chromium.use(stealth());
   const browser = await chromium.launch();
   const context = await browser.newContext({
-    ...ipad,
+    viewport: {
+      width: 1000,
+      height: 1000,
+    },
     userAgent:
       'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/122.0.6261.62 Mobile/15E148 Safari/604.1',
   });
@@ -30,7 +76,7 @@ async function scrape(url: string) {
   await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
   await page.waitForTimeout(1000);
 
-  const screenshotBuffer = await page.screenshot({ fullPage: true });
+  const screenshotBuffer = await page.screenshot({ fullPage: false });
   const screenshotString = screenshotBuffer.toString('base64');
 
   // const elements = await page.evaluate(getEle, { x: 1, y: 2 });
@@ -47,7 +93,10 @@ async function scrape2({ url, x, y }: { url: string; x: number; y: number }) {
   chromium.use(stealth());
   const browser = await chromium.launch();
   const context = await browser.newContext({
-    ...ipad,
+    viewport: {
+      width: 1000,
+      height: 1000,
+    },
     userAgent:
       'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/122.0.6261.62 Mobile/15E148 Safari/604.1',
   });
@@ -72,9 +121,7 @@ async function scrape2({ url, x, y }: { url: string; x: number; y: number }) {
 }
 
 function getEle({ x, y }: { x: number; y: number }) {
-  window.scrollTo(0, y);
-
-  const elems = document.elementsFromPoint(x, 0); // array
+  const elems = document.elementsFromPoint(x, y); // array
   // ##.##, $##.##
   const priceEle = elems.find((element: Element) => {
     // const text = (element as HTMLElement).innerText;
