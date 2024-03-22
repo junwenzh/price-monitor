@@ -27,9 +27,9 @@ export default function App() {
       },
       body: JSON.stringify({ url }),
     })
-      .then(response => response.text())
+      .then(response => response.json())
       .then(data => {
-        setImg(data);
+        setImg(data.screenshot);
         loadingEle?.classList.add('hidden');
       });
   };
@@ -59,35 +59,12 @@ export default function App() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ url, ...offsetCoords }),
+      body: JSON.stringify({ url, coordinates: offsetCoords }),
     })
       .then(response => response.json())
       .then(data => {
         console.log(data);
       });
-  };
-
-  const getEle = (x: number, y: number) => {
-    const elems = document.elementsFromPoint(x, y); // array
-    // ##.##, $##.##
-    const priceEle = elems.find((element: Element) => {
-      // const text = (element as HTMLElement).innerText;
-      const children = Array.from(element.childNodes);
-      const textNodes = children.filter(
-        node => node.nodeType === Node.TEXT_NODE
-      );
-      const texts = textNodes.map(node => node.textContent?.trim());
-      const text = texts.join(' ');
-      const regex = /^\$?\d+(?:\.\d{1,2})?$/;
-      return regex.test(text);
-    });
-
-    if (priceEle) {
-      const price = (priceEle as HTMLElement).innerText;
-      console.log('price', price);
-    } else {
-      console.log('price', 'not found');
-    }
   };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {

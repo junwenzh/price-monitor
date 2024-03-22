@@ -13,6 +13,7 @@ class PlaywrightConnection {
 
   async getBrowser(): Promise<Browser> {
     if (!this.browser) {
+      chromium.use(stealth());
       this.browser = await chromium.launch();
     }
     return this.browser;
@@ -29,6 +30,9 @@ class PlaywrightConnection {
         userAgent:
           'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/122.0.6261.62 Mobile/15E148 Safari/604.1',
       });
+      await this.context.addInitScript(
+        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+      );
     }
     return this.context;
   }
@@ -36,8 +40,15 @@ class PlaywrightConnection {
   async getPage(url: string): Promise<Page> {
     const context = await this.getContext();
     if (!(url in this.pages)) {
+      console.log('Loading new page');
       const page = await context.newPage();
+      PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
+        blocker.enableBlockingInPage(page);
+      });
       await page.goto(url);
+      await page.addScriptTag({
+        url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
+      });
       await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
       await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
       this.pages[url] = page;
@@ -48,78 +59,7 @@ class PlaywrightConnection {
 
 const playwrightConnection = new PlaywrightConnection();
 
-async function scrape(url: string) {
-  console.log('playwright scrape1', url);
-
-  const ipad = devices['iPad (gen 7)'];
-  chromium.use(stealth());
-  const browser = await chromium.launch();
-  const context = await browser.newContext({
-    viewport: {
-      width: 1000,
-      height: 1000,
-    },
-    userAgent:
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/122.0.6261.62 Mobile/15E148 Safari/604.1',
-  });
-  await context.addInitScript(
-    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-  );
-  const page = await context.newPage();
-  PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
-    blocker.enableBlockingInPage(page);
-  });
-
-  await page.goto(url);
-  await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
-  await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
-  await page.waitForTimeout(1000);
-
-  const screenshotBuffer = await page.screenshot({ fullPage: false });
-  const screenshotString = screenshotBuffer.toString('base64');
-
-  // const elements = await page.evaluate(getEle, { x: 1, y: 2 });
-
-  await context.close();
-  await browser.close();
-
-  return screenshotString;
-}
-
-async function scrape2({ url, x, y }: { url: string; x: number; y: number }) {
-  console.log('scrape2', url);
-  const ipad = devices['iPad (gen 7)'];
-  chromium.use(stealth());
-  const browser = await chromium.launch();
-  const context = await browser.newContext({
-    viewport: {
-      width: 1000,
-      height: 1000,
-    },
-    userAgent:
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/122.0.6261.62 Mobile/15E148 Safari/604.1',
-  });
-  await context.addInitScript(
-    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-  );
-  const page = await context.newPage();
-  PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
-    blocker.enableBlockingInPage(page);
-  });
-  await page.goto(url);
-  await page.addScriptTag({
-    url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
-  });
-  await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
-  await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
-
-  const element = await page.evaluate(getEle, { x: x, y: y });
-  console.log(element);
-
-  return element;
-}
-
-function getEle({ x, y }: { x: number; y: number }) {
+function getPriceElements({ x, y }: { x: number; y: number }) {
   const elems = document.elementsFromPoint(x, y); // array
   // ##.##, $##.##
   const priceEle = elems.find((element: Element) => {
@@ -151,4 +91,4 @@ function getEle({ x, y }: { x: number; y: number }) {
   }
 }
 
-export { playwrightConnection, scrape, scrape2 };
+export { playwrightConnection, getPriceElements };
