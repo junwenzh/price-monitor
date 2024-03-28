@@ -1,15 +1,46 @@
-import pg from 'pg'
+import { Pool } from 'pg';
 
+const url = '';
 
-// setup connection
-pq = {}
+const pool = new Pool({
+  connectionString: url,
+});
 
-pg.connect()
+async function query(sql: string, params?: any[]) {
+  const client = await pool.connect();
 
-export pg
+  let results;
 
-function playwright(){}
+  try {
+    results = await client.query(sql, params);
+  } catch (e) {
+    console.log(e);
+  } finally {
+    client.release();
+  }
 
-playwright.start()
+  return results;
+}
 
-export playwright
+// async
+// returns a client
+//const client = pool.connect(); // exporting a promise of a client
+// pool.connect()
+// .then(() => {
+
+// })
+// .catch((err) => {
+//     console.log(err);
+// });
+
+async function testConnection() {
+  const results = await query('select * from users;');
+  console.log(results);
+}
+
+function endPool() {
+  pool.end();
+  console.log('Postgres closed');
+}
+
+export { query, testConnection, endPool };
