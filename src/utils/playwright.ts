@@ -1,6 +1,6 @@
 import { PlaywrightBlocker } from '@cliqz/adblocker-playwright';
 import fetch from 'cross-fetch';
-import { Browser, BrowserContext, Page, devices } from 'playwright';
+import { Browser, BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
 // import { CssSelector } from 'css-selector-generator/types/types';
@@ -54,6 +54,12 @@ class PlaywrightConnection {
       this.pages[url] = page;
     }
     return this.pages[url];
+  }
+
+  async closeBrowser() {
+    if (this.browser) {
+      this.browser.close();
+    }
   }
 }
 
