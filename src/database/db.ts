@@ -1,46 +1,47 @@
 import { Pool } from 'pg';
+import dotenv from 'dotenv';
 
-const url = '';
+dotenv.config();
 
-const pool = new Pool({
-  connectionString: url,
-});
+class DB {
+  pool: Pool;
 
-async function query(sql: string, params?: any[]) {
-  const client = await pool.connect();
-
-  let results;
-
-  try {
-    results = await client.query(sql, params);
-  } catch (e) {
-    console.log(e);
-  } finally {
-    client.release();
+  constructor() {
+    const url = process.env.PGDB_URL;
+    // const url =
+    //   'postgresql://pricemonitor:popeyes@129.153.238.140:5433/pricemonitor';
+    // console.log(url);
+    this.pool = new Pool({ connectionString: url });
   }
 
-  return results;
+  getPool() {
+    return this.pool;
+  }
+
+  async closeConnection() {
+    await this.pool.end();
+    console.log('Database connection closed.');
+  }
+
+  async query(sql: string, params?: any[]) {
+    const client = await this.pool.connect();
+
+    let results;
+
+    try {
+      results = await client.query(sql, params);
+    } catch (e) {
+      results = {
+        error: e,
+      };
+    } finally {
+      client.release();
+    }
+
+    return results;
+  }
 }
 
-// async
-// returns a client
-//const client = pool.connect(); // exporting a promise of a client
-// pool.connect()
-// .then(() => {
+const db = new DB();
 
-// })
-// .catch((err) => {
-//     console.log(err);
-// });
-
-async function testConnection() {
-  const results = await query('select * from users;');
-  console.log(results);
-}
-
-function endPool() {
-  pool.end();
-  console.log('Postgres closed');
-}
-
-export { query, testConnection, endPool };
+export { db, DB };

@@ -67,7 +67,7 @@ export default function App() {
       });
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleClick = (event: MouseEvent) => {
     const imageEle = document.querySelector('#screenshot')!;
     const rect = imageEle.getBoundingClientRect()!;
 
@@ -92,7 +92,6 @@ export default function App() {
 
     console.log('coords', coords);
     console.log('offset coords', offsetC);
-    // getEle(event.clientX, event.clientY + window.scrollY);
   };
 
   useEffect(() => {

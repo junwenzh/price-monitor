@@ -1,7 +1,8 @@
 import fetchRouter from '@/routes/fetchRouter';
 import playwrightRouter from '@/routes/playwrightRouter';
+import userRouter from '@/routes/userRouter';
 import express, { NextFunction, Request, Response } from 'express';
-import { endPool, testConnection } from './database/db';
+//import { testUserDb } from './database/userdb';
 import path from 'path';
 import { playwrightConnection } from './utils/playwright';
 
@@ -26,17 +27,19 @@ app.use('/api/scrape', playwrightRouter);
 
 app.use('/api/fetch', fetchRouter);
 
+app.use('/api/users', userRouter);
+
 app.get('/api/*', (req: Request, res: Response) => {
   res.status(404).json({ message: 'API route not found' });
 });
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
-  testConnection();
+  //testUserDb();
 });
 
 function shutdown() {
-  endPool();
+  // db.closeConnection();
   playwrightConnection.closeBrowser();
 }
 
