@@ -46,13 +46,35 @@ type ErrorObject = {
   message?: string;
 };
 
+// app.use(
+//   (
+//     err: ErrorObject,
+//     req: Request,
+//     res: Response,
+//     _next: NextFunction
+//   ): void => {
+//     const defaultError: ErrorObject = {
+//       log: 'Express error handler caught unknown middleware error',
+//       status: 500,
+//       message: 'An error occurred',
+//     };
+
+//     const errorObj = Object.assign({}, defaultError, err);
+
+//     console.error(errorObj.log); // Log the error
+
+//     res.status(errorObj.status || 400).json({
+//       message: errorObj.message,
+//     }); // Send an error response
+//   }
+// );
+
 app.use(
-  (
-    err: ErrorObject,
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ): void => {
+  (err: ErrorObject, req: Request, res: Response, next: NextFunction): void => {
+    if (res.headersSent) {
+      return next(err); // Delegate to the default error handler if the headers are already sent
+    }
+
     const defaultError: ErrorObject = {
       log: 'Express error handler caught unknown middleware error',
       status: 500,
@@ -60,12 +82,8 @@ app.use(
     };
 
     const errorObj = Object.assign({}, defaultError, err);
-
     console.error(errorObj.log); // Log the error
-
-    res.status(errorObj.status || 400).json({
-      message: errorObj.message,
-    }); // Send an error response
+    res.status(errorObj.status || 500).json({ message: errorObj.message });
   }
 );
 

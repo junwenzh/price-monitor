@@ -7,7 +7,7 @@ export default function NewProductTracker() {
   if (userDetails) {
     const parsed = JSON.parse(userDetails);
     username = parsed.username;
-    email = parsed.email;
+    //email = parsed.email;
   }
   console.log(username);
   const [url, setUrl] = useState(
@@ -18,7 +18,7 @@ export default function NewProductTracker() {
   const [offsetCoords, setOffsetCoords] = useState({ x: 0, y: 0 });
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPriceForm, setShowPriceForm] = useState(false);
-  const [price, setPrice] = useState('');
+  const [price, setPrice] = useState(0);
   const [selector, setSelector] = useState('');
   const [target_price, setTargetPrice] = useState('');
   const [user_note, setUserNote] = useState('');
@@ -84,7 +84,8 @@ export default function NewProductTracker() {
       })
       .then(data => {
         console.log(data);
-        setPrice(data.price);
+        const pricefigure = Number(data.price.replace(/[$,]+/g, ''));
+        setPrice(pricefigure);
         setSelector(data.selector);
         setShowConfirmation(true);
       })
@@ -142,6 +143,7 @@ export default function NewProductTracker() {
       target_price,
       user_note,
     };
+    console.log('payload', payload);
 
     fetch('/api/price/confirmed', {
       method: 'POST',

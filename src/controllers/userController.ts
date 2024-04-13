@@ -94,7 +94,7 @@ const userController = {
         message: 'Incorrect password provided',
       });
     }
-
+    req.body.username = user.username;
     return next();
   },
 
@@ -116,6 +116,7 @@ const userController = {
         process.env.NODE_ENV === 'development' ? true : false
       );
       res.cookie('token', token, cookieOptions);
+      res.json({ username, token });
       return next();
     } catch (error) {
       return next({
@@ -158,3 +159,45 @@ const userController = {
 };
 
 export { userController };
+
+// async authenticateUser(req: Request, res: Response, next: NextFunction) {
+//   const { username, password }: UserCredentials = req.body;
+
+//   if (!username || !password) {
+//     return next({
+//       log: 'From userController.authenticateUser. Missing username or password',
+//       status: '400',
+//       message: 'Username or password not provided',
+//     });
+//   }
+
+//   const user = await userDb.getUser(username);
+
+//   if (user.error) {
+//     return next({
+//       log: `From userController.authenticateUser. ${user.error}`,
+//       status: 500,
+//       message: 'Error authenticating user',
+//     });
+//   }
+
+//   if (!user.username) {
+//     return next({
+//       log: 'From userController.authenticateUser. Username not found in the database',
+//       status: 400,
+//       message: 'User does not exist',
+//     });
+//   }
+
+//   const isPasswordValid = await bcrypt.compare(password, user.password!);
+
+//   if (!isPasswordValid) {
+//     return next({
+//       log: 'From userController.authenticateUser. Invalid password',
+//       status: 400,
+//       message: 'Incorrect password provided',
+//     });
+//   }
+
+//   return next();
+// },

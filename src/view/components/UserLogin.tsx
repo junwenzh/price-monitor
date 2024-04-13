@@ -35,7 +35,7 @@ export default function Login() {
           'userDetails',
           JSON.stringify({
             username: data.username,
-            email: data.email,
+            //            email: data.email,
           })
         );
         dispatch(logIn({ username: data.username, email: data.email }));
