@@ -29,17 +29,20 @@ const userController = {
       });
     }
 
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
-      await userDb.createUser(username, hashedPassword, email);
-      return next();
-    } catch (error) {
-      next({
-        log: `From userController.createUser. ${error}`,
+    const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+
+    // error handling is built into the method
+    const result = await userDb.createUser(username, hashedPassword, email);
+
+    if (result.error) {
+      return next({
+        log: `From userController.createUser. ${result.error}`,
         status: 500,
         message: 'Server error',
       });
     }
+
+    return next();
   },
 
   async updateUserInfo(req: Request, res: Response, next: NextFunction) {
@@ -64,37 +67,35 @@ const userController = {
       });
     }
 
-    try {
-      const user = await userDb.getUser(username);
-      if (user.error) {
-        return next({
-          log: 'From userController.authenticateUser. Database connection error',
-          status: 500,
-          message: 'Server error',
-        });
-      }
-      if (!user.username) {
-        return next({
-          log: 'From userController.authenticateUser. Username not found in the database',
-          status: 400,
-          message: 'User does not exist',
-        });
-      }
+    const user = await userDb.getUser(username);
 
-      const isPasswordValid = await bcrypt.compare(password, user.password!);
-
-      if (!isPasswordValid) {
-        return next({
-          log: 'From userController.authenticateUser. Invalid password',
-          status: 400,
-          message: 'Incorrect password provided',
-        });
-      }
-
-      return next();
-    } catch (error) {
-      next(error);
+    if (user.error) {
+      return next({
+        log: `From userController.authenticateUser. ${user.error}`,
+        status: 500,
+        message: 'Error authenticating user',
+      });
     }
+
+    if (!user.username) {
+      return next({
+        log: 'From userController.authenticateUser. Username not found in the database',
+        status: 400,
+        message: 'User does not exist',
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password!);
+
+    if (!isPasswordValid) {
+      return next({
+        log: 'From userController.authenticateUser. Invalid password',
+        status: 400,
+        message: 'Incorrect password provided',
+      });
+    }
+
+    return next();
   },
 
   async createJWT(req: Request, res: Response, next: NextFunction) {
@@ -145,7 +146,6 @@ const userController = {
         username: string;
       };
       req.username = decoded.username;
-      console.log(decoded);
       next();
     } catch (error) {
       return next({

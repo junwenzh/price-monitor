@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
 
 dotenv.config();
 
@@ -8,9 +8,6 @@ class DB {
 
   constructor() {
     const url = process.env.PGDB_URL;
-    // const url =
-    //   'postgresql://pricemonitor:popeyes@129.153.238.140:5433/pricemonitor';
-    // console.log(url);
     this.pool = new Pool({ connectionString: url });
   }
 
@@ -44,4 +41,4 @@ class DB {
 
 const db = new DB();
 
-export { db, DB };
+export { DB, db };
