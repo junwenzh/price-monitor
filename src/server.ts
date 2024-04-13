@@ -3,10 +3,10 @@ import playwrightRouter from '@/routes/playwrightRouter';
 import userRouter from '@/routes/userRouter';
 import express, { NextFunction, Request, Response } from 'express';
 //import { testUserDb } from './database/userdb';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import path from 'path';
 import { playwrightConnection } from './utils/playwright';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
 
 const app = express();
 const port = 8084;
@@ -26,14 +26,6 @@ if (process.env.NODE_ENV !== 'development') {
     }
   });
 }
-
-app.get('/api/test-cookie', (req, res) => {
-  res.cookie('testCookie', 'testValue', {
-    sameSite: 'none',
-    secure: true,
-  });
-  res.send('Success');
-});
 
 app.use('/api/scrape', playwrightRouter);
 
@@ -57,3 +49,5 @@ function shutdown() {
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
+
+export default app;

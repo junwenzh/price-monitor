@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { useSelector, useDispatch } from 'react-redux';
-import { logIn, logOut } from '../slices/loggedInSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { logOut } from '../slices/loggedInSlice';
 import { RootState } from '../store';
-import { Link, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 
 export default function NavBar() {
   const isLoggedIn = useSelector(
@@ -41,14 +41,9 @@ export default function NavBar() {
     </div>
   );
 
-  const testCookie = () => {
-    fetch('/test-cookie');
-  };
-
   return (
     <div>
       <nav className="flex">{isLoggedIn ? LoggedInUI() : LoggedOutUI()}</nav>
-      <button onClick={testCookie}>test cookie</button>
     </div>
   );
 }
