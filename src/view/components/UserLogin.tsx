@@ -31,6 +31,13 @@ export default function Login() {
             expiry: new Date().getTime() + 3600,
           })
         );
+        localStorage.setItem(
+          'userDetails',
+          JSON.stringify({
+            username: data.username,
+            email: data.email,
+          })
+        );
         dispatch(logIn({ username: data.username, email: data.email }));
         navigate('/');
       } else {

@@ -1,12 +1,12 @@
-import express from 'express';
 import { priceController } from '@/controllers/priceController';
+import express, { Request, Response } from 'express';
 const router = express.Router();
 router.post(
   'confirmed',
-  priceController.saveUrl,
-  priceController.saveBaseUrl,
-  priceController.savePrice,
-  (req, res) => {
+  //priceController.saveBaseUrl,
+  priceController.newTrackedItem,
+  (req: Request, res: Response) => {
     res.json({ message: 'sent successfully' });
   }
 );
+export default router;

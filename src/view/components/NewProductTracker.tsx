@@ -1,12 +1,27 @@
 import React, { useEffect, useState } from 'react';
 
 export default function NewProductTracker() {
+  let username = '';
+  let email = '';
+  const userDetails = localStorage.getItem('userDetails');
+  if (userDetails) {
+    const parsed = JSON.parse(userDetails);
+    username = parsed.username;
+    email = parsed.email;
+  }
+  console.log(username);
   const [url, setUrl] = useState(
     'https://www.fragrancenet.com/perfume/dolce-and-gabbana/d-and-g-light-blue/edt#118661'
   );
   const [img, setImg] = useState('');
   const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
   const [offsetCoords, setOffsetCoords] = useState({ x: 0, y: 0 });
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showPriceForm, setShowPriceForm] = useState(false);
+  const [price, setPrice] = useState('');
+  const [selector, setSelector] = useState('');
+  const [target_price, setTargetPrice] = useState('');
+  const [user_note, setUserNote] = useState('');
   // const [rect, setRect] = useState({ x: 0, y: 0 });
   //const imageRef = useRef<HTMLImageElement>(null);
 
@@ -61,9 +76,20 @@ export default function NewProductTracker() {
       },
       body: JSON.stringify({ url, coordinates: offsetCoords }),
     })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
         console.log(data);
+        setPrice(data.price);
+        setSelector(data.selector);
+        setShowConfirmation(true);
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
       });
   };
 
@@ -100,6 +126,42 @@ export default function NewProductTracker() {
     shoppingSite.addEventListener('click', handleClick);
   }, []);
 
+  const handleConfirm = () => {
+    setShowConfirmation(false);
+    setShowPriceForm(true); // Show the price form after confirmation
+  };
+
+  const handlePriceFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Collect all data and send to the server
+    const payload = {
+      username,
+      url,
+      selector,
+      price,
+      target_price,
+      user_note,
+    };
+
+    fetch('/api/price/confirmed', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Submission successful', data);
+        // Reset form or handle next steps
+        setShowPriceForm(false);
+        setUrl('');
+        setTargetPrice('');
+        setUserNote('');
+      })
+      .catch(error => console.error('Error submitting product data:', error));
+  };
+
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="text-3xl my-4">Price Monitor</div>
@@ -133,6 +195,34 @@ export default function NewProductTracker() {
           Send Coordinates
         </button>
       </form>
+      {showConfirmation && (
+        <div>
+          <p>Confirm to proceed with the entered coordinates.</p>
+          <button onClick={handleConfirm}>Confirm</button>
+        </div>
+      )}
+
+      {showPriceForm && (
+        <form
+          onSubmit={handlePriceFormSubmit}
+          className="flex flex-col items-center gap-4"
+        >
+          <input
+            type="text"
+            placeholder="Enter target price"
+            value={target_price}
+            onChange={e => setTargetPrice(e.target.value)}
+            className="ring-2 ring-slate-200 rounded p-2"
+          />
+          <textarea
+            placeholder="Enter user note"
+            value={user_note}
+            onChange={e => setUserNote(e.target.value)}
+            className="ring-2 ring-slate-200 rounded p-2"
+          />
+          <button type="submit">Submit Price and Note</button>
+        </form>
+      )}
       <div id="loadingSpin" className="flex flex-row items-center hidden">
         <svg
           className="animate-spin size-5 text-gray-500 mr-4"

@@ -1,28 +1,17 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { logIn, logOut } from '../slices/loggedInSlice';
-import { RootState } from '../store';
+import { useDispatch } from 'react-redux';
+import { logIn } from '../slices/loggedInSlice';
+
+type ResponseError = {
+  message: string;
+};
 
 export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const isLoggedIn = useSelector(
-    (state: RootState) => state.isLoggedIn.isLoggedIn
-  );
-  const loggedInUser = useSelector(
-    (state: RootState) => state.isLoggedIn.username
-  );
   const dispatch = useDispatch();
-
-  const handleLogIn = () => {
-    dispatch(logIn({ username: 'hi', email: 'email' }));
-  };
-
-  const handleLogOut = () => {
-    dispatch(logOut());
-  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,10 +25,14 @@ export default function Register() {
         body: JSON.stringify({ username, email, password }),
       });
 
+      console.log(response);
+
       if (response.ok) {
         // redirect?
+        dispatch(logIn({ username, email }));
       } else {
-        console.error('Registration failed');
+        const error: ResponseError = await response.json();
+        console.error(error.message);
       }
     } catch (error) {
       console.error('Error during registration:', error);
@@ -82,12 +75,6 @@ export default function Register() {
         </div>
         <button type="submit">Register</button>
       </form>
-      <section>
-        <p>{isLoggedIn}</p>
-        <p>{loggedInUser ? loggedInUser : 'Not logged in'}</p>
-        <button onClick={handleLogIn}>Log In</button>
-        <button onClick={handleLogOut}>Log Out</button>
-      </section>
     </div>
   );
 }
