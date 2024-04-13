@@ -23,15 +23,9 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
-        localStorage.setItem(
-          'token',
-          JSON.stringify({
-            value: data.token,
-            expiry: new Date().getTime() + 3600,
-          })
-        );
+        console.log(data.message);
         dispatch(logIn({ username: data.username, email: data.email }));
+
         navigate('/');
       } else {
         console.error('Login failed');

@@ -4,21 +4,16 @@ import jwt from 'jsonwebtoken';
 //import { db, DB } from '@/database/db';
 import { userDb } from '@/database/userdb';
 import { getCrossOriginCookieOptions } from '@/utils/setCookie';
+import { AuthenticatedRequest, UserCredentials } from './userControllerTypes';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
-interface AuthenticatedRequest extends Request {
-  username?: string;
-}
-
-type UserCredentials = {
-  username?: string;
-  email?: string;
-  password?: string;
-};
-
 const userController = {
-  async createUser(req: Request, res: Response, next: NextFunction) {
+  async createUser(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     const { username, email, password }: UserCredentials = req.body;
 
     if (!username || !email || !password) {
@@ -42,6 +37,9 @@ const userController = {
       });
     }
 
+    req.username = username;
+    req.email = email;
+
     return next();
   },
 
@@ -56,7 +54,11 @@ const userController = {
     }
   },
 
-  async authenticateUser(req: Request, res: Response, next: NextFunction) {
+  async authenticateUser(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     const { username, password }: UserCredentials = req.body;
 
     if (!username || !password) {
@@ -94,6 +96,9 @@ const userController = {
         message: 'Incorrect password provided',
       });
     }
+
+    req.username = user.username;
+    req.email = user.email;
 
     return next();
   },
