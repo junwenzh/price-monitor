@@ -13,18 +13,32 @@ interface AuthenticatedRequest extends Request {
 
 type UserCredentials = {
   username?: string;
+  email?: string;
   password?: string;
 };
 
 const userController = {
   async createUser(req: Request, res: Response, next: NextFunction) {
+    const { username, email, password }: UserCredentials = req.body;
+
+    if (!username || !email || !password) {
+      return next({
+        log: 'From userController.createUser. Missing username, email or password',
+        status: 400,
+        message: 'Username, email or password not provided',
+      });
+    }
+
     try {
-      const { username, email, password } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
-      const result = await userDb.createUser(username, hashedPassword, email);
-      res.json(result);
+      await userDb.createUser(username, hashedPassword, email);
+      return next();
     } catch (error) {
-      next(error);
+      next({
+        log: `From userController.createUser. ${error}`,
+        status: 500,
+        message: 'Server error',
+      });
     }
   },
 
