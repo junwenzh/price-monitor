@@ -67,6 +67,7 @@ const userController = {
 
     if (!token) {
       return next({
+        log: 'From userController.authenticateJWT. No token provided.',
         status: 401,
         message: 'Authentication failed: No token provided',
       });
@@ -81,6 +82,7 @@ const userController = {
       next();
     } catch (error) {
       return next({
+        log: 'From userController.authenticateJWT. Invalid token',
         status: 403,
         message: 'Authentication failed: Invalid token',
       });

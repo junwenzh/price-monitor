@@ -37,6 +37,35 @@ app.get('/api/*', (req: Request, res: Response) => {
   res.status(404).json({ message: 'API route not found' });
 });
 
+type ErrorObject = {
+  log?: string;
+  status?: number;
+  message?: string;
+};
+
+app.use(
+  (
+    err: ErrorObject,
+    req: Request,
+    res: Response,
+    _next: NextFunction
+  ): void => {
+    const defaultError: ErrorObject = {
+      log: 'Express error handler caught unknown middleware error',
+      status: 500,
+      message: 'An error occurred',
+    };
+
+    const errorObj = Object.assign({}, defaultError, err);
+
+    console.error(errorObj.log); // Log the error
+
+    res.status(errorObj.status || 400).json({
+      message: errorObj.message,
+    }); // Send an error response
+  }
+);
+
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
   //testUserDb();
