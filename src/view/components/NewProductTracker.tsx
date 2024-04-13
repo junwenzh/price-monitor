@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function NewProductTracker() {
+  const navigate = useNavigate();
   let username = '';
-  let email = '';
+  // let email = '';
   const userDetails = localStorage.getItem('userDetails');
   if (userDetails) {
     const parsed = JSON.parse(userDetails);
@@ -22,6 +24,7 @@ export default function NewProductTracker() {
   const [selector, setSelector] = useState('');
   const [target_price, setTargetPrice] = useState('');
   const [user_note, setUserNote] = useState('');
+  const [showPostSubmitOptions, setShowPostSubmitOptions] = useState(false);
   // const [rect, setRect] = useState({ x: 0, y: 0 });
   //const imageRef = useRef<HTMLImageElement>(null);
 
@@ -84,7 +87,8 @@ export default function NewProductTracker() {
       })
       .then(data => {
         console.log(data);
-        const pricefigure = Number(data.price.replace(/[$,]+/g, ''));
+        const priceString = data.price;
+        const pricefigure = Number(priceString.replace(/[$,]+/g, ''));
         setPrice(pricefigure);
         setSelector(data.selector);
         setShowConfirmation(true);
@@ -135,7 +139,7 @@ export default function NewProductTracker() {
   const handlePriceFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Collect all data and send to the server
-    const payload = {
+    const newTrackedProduct = {
       username,
       url,
       selector,
@@ -143,23 +147,19 @@ export default function NewProductTracker() {
       target_price,
       user_note,
     };
-    console.log('payload', payload);
+    console.log('payload', newTrackedProduct);
 
     fetch('/api/price/confirmed', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(newTrackedProduct),
     })
       .then(response => response.json())
       .then(data => {
         console.log('Submission successful', data);
-        // Reset form or handle next steps
-        setShowPriceForm(false);
-        setUrl('');
-        setTargetPrice('');
-        setUserNote('');
+        setShowPostSubmitOptions(true);
       })
       .catch(error => console.error('Error submitting product data:', error));
   };
@@ -225,6 +225,35 @@ export default function NewProductTracker() {
           <button type="submit">Submit Price and Note</button>
         </form>
       )}
+
+      {showPostSubmitOptions && (
+        <div>
+          <button
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => {
+              // Reset all fields and keep the user on the form to submit another request
+              setShowPriceForm(true);
+              setUrl('');
+              setTargetPrice('');
+              setUserNote('');
+              setShowPostSubmitOptions(false); // Hide options
+            }}
+          >
+            Submit Another Price Request
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => {
+              // Potentially navigate to a previous page or out of the current form
+              navigate(-1); // Assuming you're using React Router
+              setShowPostSubmitOptions(false); // Hide options
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+      )}
+
       <div id="loadingSpin" className="flex flex-row items-center hidden">
         <svg
           className="animate-spin size-5 text-gray-500 mr-4"
