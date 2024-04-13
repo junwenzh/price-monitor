@@ -3,12 +3,18 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 //import { db, DB } from '@/database/db';
 import { userDb } from '@/database/userdb';
+import { getCrossOriginCookieOptions } from '@/utils/setCookie';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 interface AuthenticatedRequest extends Request {
   username?: string;
 }
+
+type UserCredentials = {
+  username?: string;
+  password?: string;
+};
 
 const userController = {
   async createUser(req: Request, res: Response, next: NextFunction) {
@@ -34,27 +40,74 @@ const userController = {
   },
 
   async authenticateUser(req: Request, res: Response, next: NextFunction) {
+    const { username, password }: UserCredentials = req.body;
+
+    if (!username || !password) {
+      return next({
+        log: 'From userController.authenticateUser. Missing username or password',
+        status: '400',
+        message: 'Username or password not provided',
+      });
+    }
+
     try {
-      const { username, password } = req.body;
       const user = await userDb.getUser(username);
       if (user.error) {
-        throw new Error('Database connection failed');
+        return next({
+          log: 'From userController.authenticateUser. Database connection error',
+          status: 500,
+          message: 'Server error',
+        });
       }
       if (!user.username) {
-        throw new Error('User not found');
+        return next({
+          log: 'From userController.authenticateUser. Username not found in the database',
+          status: 400,
+          message: 'User does not exist',
+        });
       }
-      if (user.password) {
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-          throw new Error('Invalid password');
-        }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password!);
+
+      if (!isPasswordValid) {
+        return next({
+          log: 'From userController.authenticateUser. Invalid password',
+          status: 400,
+          message: 'Incorrect password provided',
+        });
       }
-      const token = jwt.sign({ username: user.username }, JWT_SECRET, {
-        expiresIn: '1h',
-      });
-      res.json({ token, username: user.username, email: user.email });
+
+      return next();
     } catch (error) {
       next(error);
+    }
+  },
+
+  async createJWT(req: Request, res: Response, next: NextFunction) {
+    const username = req.body.username as string;
+
+    if (!username) {
+      return next({
+        log: 'From userController.createJWT. No username from request body',
+        status: 404,
+        message: 'No username provided',
+      });
+    }
+
+    try {
+      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1d' });
+      const cookieOptions = getCrossOriginCookieOptions(
+        60 * 60,
+        process.env.NODE_ENV === 'development' ? true : false
+      );
+      res.cookie('token', token, cookieOptions);
+      return next();
+    } catch (error) {
+      return next({
+        log: `From userController.createJWT. ${error}`,
+        status: '500',
+        message: 'Failed to sign JWT',
+      });
     }
   },
 
