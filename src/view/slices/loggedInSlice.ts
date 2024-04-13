@@ -25,7 +25,7 @@ const loggedInSlice = createSlice({
       state.email = action.payload.email;
     },
     logOut: state => {
-      state.isLoggedIn = true;
+      state.isLoggedIn = false;
       state.username = '';
       state.email = '';
     },

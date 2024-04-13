@@ -45,8 +45,10 @@ const userController = {
           throw new Error('Invalid password');
         }
       }
-      const token = jwt.sign({ username: user.username }, JWT_SECRET);
-      res.json({ token });
+      const token = jwt.sign({ username: user.username }, JWT_SECRET, {
+        expiresIn: '1h',
+      });
+      res.json({ token, username: user.username, email: user.email });
     } catch (error) {
       next(error);
     }

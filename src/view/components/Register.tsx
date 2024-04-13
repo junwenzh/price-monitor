@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { logIn, logOut } from './slices/loggedInSlice';
-import { RootState } from './store';
+import { logIn, logOut } from '../slices/loggedInSlice';
+import { RootState } from '../store';
 
 export default function Register() {
   const [username, setUsername] = useState('');

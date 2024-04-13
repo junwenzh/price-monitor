@@ -5,10 +5,14 @@ import express, { NextFunction, Request, Response } from 'express';
 //import { testUserDb } from './database/userdb';
 import path from 'path';
 import { playwrightConnection } from './utils/playwright';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const port = 8084;
 
+app.use(cors({ origin: 'http://localhost:8084', credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 
 if (process.env.NODE_ENV !== 'development') {
@@ -22,6 +26,14 @@ if (process.env.NODE_ENV !== 'development') {
     }
   });
 }
+
+app.get('/api/test-cookie', (req, res) => {
+  res.cookie('testCookie', 'testValue', {
+    sameSite: 'none',
+    secure: true,
+  });
+  res.send('Success');
+});
 
 app.use('/api/scrape', playwrightRouter);
 
