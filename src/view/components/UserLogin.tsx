@@ -38,7 +38,7 @@ export default function Login() {
             //            email: data.email,
           })
         );
-        dispatch(logIn({ username: data.username, email: data.email }));
+        dispatch(logIn({ username: data.username }));
         navigate('/');
       } else {
         console.error('Login failed');

@@ -29,7 +29,7 @@ export default function Register() {
 
       if (response.ok) {
         // redirect?
-        dispatch(logIn({ username, email }));
+        dispatch(logIn({ username }));
       } else {
         const error: ResponseError = await response.json();
         console.error(error.message);

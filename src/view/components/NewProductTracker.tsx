@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  setUrl,
+  setImg,
+  setCoordinates,
+  setOffsetCoords,
+  toggleConfirmation,
+  togglePriceForm,
+  setPrice,
+  setSelector,
+  setTargetPrice,
+  setUserNote,
+  togglePostSubmitOptions,
+} from '../slices/newProductSlice';
+import { RootState } from '../store';
 
 export default function NewProductTracker() {
   const navigate = useNavigate();
@@ -12,6 +27,12 @@ export default function NewProductTracker() {
     //email = parsed.email;
   }
   console.log(username);
+  // const dispatch = useDispatch();
+  // const {
+  //   url, img, coordinates, offsetCoords, showConfirmation,
+  //   showPriceForm, price, selector, target_price, user_note, showPostSubmitOptions
+  // } = useSelector((state: RootState) => state.newProduct);
+
   const [url, setUrl] = useState(
     'https://www.fragrancenet.com/perfume/dolce-and-gabbana/d-and-g-light-blue/edt#118661'
   );
@@ -26,7 +47,11 @@ export default function NewProductTracker() {
   const [user_note, setUserNote] = useState('');
   const [showPostSubmitOptions, setShowPostSubmitOptions] = useState(false);
   // const [rect, setRect] = useState({ x: 0, y: 0 });
-  //const imageRef = useRef<HTMLImageElement>(null);
+  // const imageRef = useRef<HTMLImageElement>(null);
+
+  // const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   dispatch(setUrl(event.target.value));
+  // };
 
   const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(event.target.value);
@@ -147,7 +172,7 @@ export default function NewProductTracker() {
       target_price,
       user_note,
     };
-    console.log('payload', newTrackedProduct);
+    console.log('new tracked product info', newTrackedProduct);
 
     fetch('/api/price/confirmed', {
       method: 'POST',
@@ -199,7 +224,7 @@ export default function NewProductTracker() {
       </form>
       {showConfirmation && (
         <div>
-          <p>Confirm to proceed with the entered coordinates.</p>
+          <p>Confirm that the price of this item is {price}.</p>
           <button onClick={handleConfirm}>Confirm</button>
         </div>
       )}

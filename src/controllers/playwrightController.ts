@@ -54,6 +54,11 @@ class PlaywrightController {
       });
     }
   }
+
+  async getPrice(req: Request, res: Response, next: NextFunction) {
+    // const url =
+    // const selector
+  }
 }
 
 export default new PlaywrightController();

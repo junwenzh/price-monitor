@@ -7,6 +7,19 @@ class PriceDB {
   constructor(db: DB) {
     this.db = db;
   }
+  //crud
+
+  //methods that allow user to update specific field
+
+  //method to delete a user product
+
+  //method to add new base url
+
+  //method to get all user products for a single user
+
+  //method for base URL update
+
+  //method to query a base url
 
   async newTrackedItem(
     url: string,

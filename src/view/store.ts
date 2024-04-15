@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import loggedInReducer from './slices/loggedInSlice';
+import newProductReducer from './slices/newProductSlice';
 
 export const store = configureStore({
   reducer: {
     isLoggedIn: loggedInReducer,
+    newProduct: newProductReducer,
   },
 });
 
