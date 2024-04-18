@@ -42,6 +42,8 @@ const userController = {
       });
     }
 
+    res.cookie('username', username);
+
     return next();
   },
 
@@ -94,7 +96,10 @@ const userController = {
         message: 'Incorrect password provided',
       });
     }
+
     req.body.username = user.username;
+    res.cookie('username', username);
+
     return next();
   },
 
@@ -116,7 +121,7 @@ const userController = {
         process.env.NODE_ENV === 'development' ? true : false
       );
       res.cookie('token', token, cookieOptions);
-      res.json({ username, token });
+      // res.json({ username, token });
       return next();
     } catch (error) {
       return next({

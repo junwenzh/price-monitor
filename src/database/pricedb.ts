@@ -1,13 +1,29 @@
-//import { QueryResult } from 'pg';
+import { QueryResult } from 'pg';
 import { db, DB } from './db';
 
 class PriceDB {
   db: DB;
+  pool;
+  query;
 
   constructor(db: DB) {
     this.db = db;
+    this.pool = db.getPool();
+    this.query = db.query;
   }
   //crud
+
+  //method that gets all urls
+  async getUrls() {
+    const sql = `SELECT DISTINCT up.url, u.selector FROM user_products up JOIN urls u ON up.url =u.url`;
+    try {
+      const results = (await this.query(sql)) as QueryResult;
+      return results.rows;
+    } catch (error) {
+      console.error('Error fetching urls', error);
+      throw error;
+    }
+  }
 
   //methods that allow user to update specific field
 
@@ -16,6 +32,17 @@ class PriceDB {
   //method to add new base url
 
   //method to get all user products for a single user
+
+  async getProducts(username: string) {
+    const sql = `SELECT up.username, up.url, up.user_note, up.target_price, u.selector, ph.price,ph.price_timestamp FROM user_products up JOIN urls u ON up.url = u.url JOIN pricehistory ph ON u.url = ph.url WHERE up.username = $1`;
+    try {
+      const results = (await this.query(sql, [username])) as QueryResult;
+      return results.rows;
+    } catch (error) {
+      console.error('Error fetching product info:', error);
+      throw error;
+    }
+  }
 
   //method for base URL update
 

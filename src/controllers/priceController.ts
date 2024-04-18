@@ -4,17 +4,17 @@ import { priceDb } from '@/database/pricedb';
 
 const priceController = {
   // //extract base url from url and selector
-  async saveBaseUrl(req: Request, res: Response, next: NextFunction) {
-    const url = res.locals.url as string;
-    const regex = /^(https?:\/\/[^\/]+)/;
-    const matchedUrl: RegExpMatchArray | null = url.match(regex);
-    if (matchedUrl) {
-      const baseUrl = matchedUrl[0];
-      //update the base url table with base url and selector
-    } else {
-      console.log('no base url');
-    }
-  },
+  // async saveBaseUrl(req: Request, res: Response, next: NextFunction) {
+  //   const url = res.locals.url as string;
+  //   const regex = /^(https?:\/\/[^\/]+)/;
+  //   const matchedUrl: RegExpMatchArray | null = url.match(regex);
+  //   if (matchedUrl) {
+  //     const baseUrl = matchedUrl[0];
+  //     //update the base url table with base url and selector
+  //   } else {
+  //     console.log('no base url');
+  //   }
+  // },
   //save to urls table, pass in url and selector
   async newTrackedItem(req: Request, res: Response, next: NextFunction) {
     try {

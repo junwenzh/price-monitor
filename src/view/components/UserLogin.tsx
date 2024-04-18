@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logIn } from '../slices/loggedInSlice';
+import Cookies from 'js-cookie';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -22,23 +23,24 @@ export default function Login() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log(data);
+        // const data = await response.json();
+        const username = Cookies.get('username');
+        const token = Cookies.get('token');
         localStorage.setItem(
           'token',
           JSON.stringify({
-            value: data.token,
+            value: token,
             expiry: new Date().getTime() + 3600,
           })
         );
         localStorage.setItem(
           'userDetails',
           JSON.stringify({
-            username: data.username,
+            username: username,
             //            email: data.email,
           })
         );
-        dispatch(logIn({ username: data.username }));
+        dispatch(logIn({ username: username }));
         navigate('/');
       } else {
         console.error('Login failed');

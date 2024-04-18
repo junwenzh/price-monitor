@@ -1,5 +1,6 @@
 import { playwrightConnection, getPriceElements } from '@/utils/playwright';
 import { Request, Response, NextFunction } from 'express';
+import { ErrorObject } from '@/server';
 
 class PlaywrightController {
   // original scrape
@@ -56,8 +57,53 @@ class PlaywrightController {
   }
 
   async getPrice(req: Request, res: Response, next: NextFunction) {
-    // const url =
-    // const selector
+    // given a url and selector, open the page and get the price
+    const url = req.body.url;
+    const selector = req.body.selector;
+
+    if (typeof url !== 'string' && typeof selector !== 'string') {
+      const err: ErrorObject = {
+        log: 'From playwrightController.getPrice. Missing url or selector',
+        message: 'Missing url or selector',
+        status: 400,
+      };
+      return next(err);
+    }
+
+    const page = await playwrightConnection.getPage(url);
+    const element = page.locator(selector);
+
+    if (!element) {
+      const err: ErrorObject = {
+        log: 'From playwrightController.getPrice. Element not found at selector',
+        status: 500,
+      };
+      return next(err);
+    }
+
+    const price = await element.textContent();
+
+    if (!price) {
+      const err: ErrorObject = {
+        log: 'From playwrightController.getPrice. Element has no text',
+        status: 500,
+      };
+      return next(err);
+    }
+    // convert the price to a number
+    const re = /\d+(\.\d+)?/;
+    const matches = price.match(re);
+
+    if (!matches) {
+      const err: ErrorObject = {
+        log: 'From playwrightController.getPrice. Element text has no price',
+        status: 500,
+      };
+      return next(err);
+    }
+
+    res.locals.price = matches[0];
+    return next();
   }
 }
 

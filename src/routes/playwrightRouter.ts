@@ -20,4 +20,12 @@ router.post(
   }
 );
 
+router.post(
+  '/getprice',
+  playwrightController.getPrice,
+  (req: Request, res: Response) => {
+    return res.json({ price: res.locals.price });
+  }
+);
+
 export default router;

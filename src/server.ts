@@ -8,6 +8,7 @@ import path from 'path';
 import { playwrightConnection } from './utils/playwright';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import refreshRouter from './routes/refreshRouter';
 
 const app = express();
 const port = 8084;
@@ -36,11 +37,13 @@ app.use('/api/users', userRouter);
 
 app.use('/api/price', priceRouter);
 
+app.use('/api/refresh', refreshRouter);
+
 app.get('/api/*', (req: Request, res: Response) => {
   res.status(404).json({ message: 'API route not found' });
 });
 
-type ErrorObject = {
+export type ErrorObject = {
   log?: string;
   status?: number;
   message?: string;

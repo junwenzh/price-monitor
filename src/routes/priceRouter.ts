@@ -1,6 +1,13 @@
 import { priceController } from '@/controllers/priceController';
 import express, { Request, Response } from 'express';
 const router = express.Router();
+
+// router.post(
+//   ':/username',
+//   priceController.getUserInfo,
+//   (req: Request, res: Response) =
+
+// )
 router.post(
   '/confirmed',
   //priceController.saveBaseUrl,

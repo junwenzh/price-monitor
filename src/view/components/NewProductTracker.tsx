@@ -1,31 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  setUrl,
-  setImg,
-  setCoordinates,
-  setOffsetCoords,
-  toggleConfirmation,
-  togglePriceForm,
-  setPrice,
-  setSelector,
-  setTargetPrice,
-  setUserNote,
-  togglePostSubmitOptions,
-} from '../slices/newProductSlice';
 import { RootState } from '../store';
+// import { useDispatch, useSelector } from 'react-redux';
+// import {
+//   setUrl,
+//   setImg,
+//   setCoordinates,
+//   setOffsetCoords,
+//   toggleConfirmation,
+//   togglePriceForm,
+//   setPrice,
+//   setSelector,
+//   setTargetPrice,
+//   setUserNote,
+//   togglePostSubmitOptions,
+// } from '../slices/newProductSlice';
+// import { RootState } from '../store';
 
 export default function NewProductTracker() {
   const navigate = useNavigate();
-  let username = '';
-  // let email = '';
-  const userDetails = localStorage.getItem('userDetails');
-  if (userDetails) {
-    const parsed = JSON.parse(userDetails);
-    username = parsed.username;
-    //email = parsed.email;
-  }
+  const username = useSelector((state: RootState) => state.isLoggedIn.username);
   console.log(username);
   // const dispatch = useDispatch();
   // const {
@@ -280,7 +275,7 @@ export default function NewProductTracker() {
       )}
 
       <div id="loadingSpin" className="flex flex-row items-center hidden">
-        <svg
+        {/* <svg
           className="animate-spin size-5 text-gray-500 mr-4"
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
@@ -299,7 +294,7 @@ export default function NewProductTracker() {
             fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
-        </svg>
+        </svg> */}
         <span>Loading...</span>
       </div>
       <div id="shoppingsite" className={img ? '' : 'hidden'}>
