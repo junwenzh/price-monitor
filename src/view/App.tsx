@@ -10,6 +10,7 @@ import Layout from './layouts/Layout';
 import Register from './components/Register';
 import Login from './components/UserLogin';
 import NewProductTracker from './components/NewProductTracker';
+import TrackingHistory from './components/TrackingHistory';
 
 import Home from './Home';
 
@@ -20,6 +21,7 @@ const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="newproduct" element={<NewProductTracker />} />
+      <Route path="trackinghistory" element={<TrackingHistory />} />
     </Route>
   )
 );

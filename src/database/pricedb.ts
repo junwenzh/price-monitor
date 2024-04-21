@@ -36,7 +36,13 @@ class PriceDB {
   async getProducts(username: string) {
     const sql = `SELECT up.username, up.url, up.user_note, up.target_price, u.selector, ph.price,ph.price_timestamp FROM user_products up JOIN urls u ON up.url = u.url JOIN pricehistory ph ON u.url = ph.url WHERE up.username = $1`;
     try {
+      console.log('Executing query:', sql);
+      console.log('With parameters:', [username]);
       const results = (await this.query(sql, [username])) as QueryResult;
+      console.log('Executing query:', sql);
+      console.log('With parameters:', [username]);
+      console.log('Results:', results.rows);
+      console.log(results);
       return results.rows;
     } catch (error) {
       console.error('Error fetching product info:', error);
@@ -45,6 +51,21 @@ class PriceDB {
   }
 
   //method for base URL update
+
+  async createBaseUrl(baseurl: string, selector: string) {
+    const sql =
+      'insert into baseurls (baseurl, selector) values ($1, $2) returning baseurl, selector';
+    try {
+      const results = (await this.query(sql, [
+        baseurl,
+        selector,
+      ])) as QueryResult;
+      return results.rows;
+    } catch (error) {
+      console.error('Database error', error);
+      throw error;
+    }
+  }
 
   //method to query a base url
 
