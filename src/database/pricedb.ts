@@ -1,5 +1,10 @@
 import { QueryResult } from 'pg';
 import { db, DB } from './db';
+import {
+  createUpdateQuery,
+  UpdateQueryParams,
+  UpdateQueryResult,
+} from '@/utils/sqlHelpers';
 
 class PriceDB {
   db: DB;
@@ -36,16 +41,38 @@ class PriceDB {
   async getProducts(username: string) {
     const sql = `SELECT up.username, up.url, up.user_note, up.target_price, u.selector, ph.price,ph.price_timestamp FROM user_products up JOIN urls u ON up.url = u.url JOIN pricehistory ph ON u.url = ph.url WHERE up.username = $1`;
     try {
-      console.log('Executing query:', sql);
-      console.log('With parameters:', [username]);
       const results = (await this.query(sql, [username])) as QueryResult;
-      console.log('Executing query:', sql);
-      console.log('With parameters:', [username]);
       console.log('Results:', results.rows);
-      console.log(results);
       return results.rows;
     } catch (error) {
       console.error('Error fetching product info:', error);
+      throw error;
+    }
+  }
+
+  async updateProduct(params: UpdateQueryParams) {
+    const queryData = createUpdateQuery(params);
+    if (!queryData) {
+      throw new Error('No valid fields provided for update');
+    }
+
+    try {
+      const { sqlString, values } = queryData;
+      const result = await this.pool.query(sqlString, values);
+      return result.rows; // Or handle the response as needed
+    } catch (error) {
+      console.error('Error executing update query:', error);
+      throw error;
+    }
+  }
+
+  async deleteProduct(username: string, url: string) {
+    const sql = `DELETE FROM user_products WHERE username = $1 AND url = $2`;
+    try {
+      const results = (await this.query(sql, [username, url])) as QueryResult;
+      return results.rows;
+    } catch (error) {
+      console.error('Database error', error);
       throw error;
     }
   }

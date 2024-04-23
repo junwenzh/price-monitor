@@ -6,7 +6,15 @@ router.get(
   '/:username',
   priceController.getProducts,
   (req: Request, res: Response) => {
-    res.json({ message: 'Items loaded successfully', data: res.locals.data });
+    res.json({ data: res.locals.data });
+  }
+);
+
+router.put(
+  '/update',
+  priceController.updateProducts,
+  (req: Request, res: Response) => {
+    res.json({ data: res.locals.data });
   }
 );
 

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 //import { url } from 'inspector';
 import { priceDb } from '@/database/pricedb';
+import { UpdateQueryParams } from '@/utils/sqlHelpers';
 
 const priceController = {
   // //extract base url from url and selector
@@ -16,13 +17,11 @@ const priceController = {
         res.json(result);
       } catch (error) {
         console.error('Error saving to the database:', error);
-        next(error); // Pass the error to the error handling middleware
+        next(error);
       }
     } else {
       console.log('No base URL found');
-      const error = new Error(
-        'No base URL could be extracted from the provided URL.'
-      );
+      const error = new Error('No base URL');
       next(error);
     }
   },
@@ -65,8 +64,29 @@ const priceController = {
   //   const timestamp = Date.now();
   //   //update table with price, url and timestamp
   // },
+  async updateProducts(req: Request, res: Response) {
+    const { username, url, user_note, target_price } = req.body;
+    const fieldsToUpdate = { user_note, target_price };
+    const params: UpdateQueryParams = {
+      fields: fieldsToUpdate,
+      baseParams: [username, url],
+      tableName: 'user_products',
+      whereClause: ['username = $1', 'url = $2'],
+    };
 
-  // //save to fourth table
+    try {
+      await priceDb.updateProduct(params);
+      res.json({ message: 'Product info updated successfully' });
+    } catch (error) {
+      console.error('Failed to update product info:', error);
+      res.status(500).json({ error: 'Failed to update product information' });
+    }
+  },
+
+  //   async deleteProducts(req: Request, res: Response) {
+  //     const { username, url } =
+  //   }
+  //   // //save to fourth table
 };
 
 export { priceController };
