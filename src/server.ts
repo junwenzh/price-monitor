@@ -1,14 +1,14 @@
 import fetchRouter from '@/routes/fetchRouter';
 import playwrightRouter from '@/routes/playwrightRouter';
-import userRouter from '@/routes/userRouter';
 import priceRouter from '@/routes/priceRouter';
+import userRouter from '@/routes/userRouter';
 import express, { NextFunction, Request, Response } from 'express';
 //import { testUserDb } from './database/userdb';
-import path from 'path';
-import { playwrightConnection } from './utils/playwright';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import path from 'path';
 import refreshRouter from './routes/refreshRouter';
+import { playwrightConnection } from './utils/playwright';
 
 const app = express();
 const port = 8084;
