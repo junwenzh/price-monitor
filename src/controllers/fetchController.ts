@@ -11,6 +11,7 @@ import jsdom from 'jsdom';
 */
 
 class FetchController {
+  //convert fetchPrice to method and integrate into refreshcontroller
   async fetchPrice(req: Request, res: Response, next: NextFunction) {
     const url = res.locals.url as string;
     const selector = res.locals.selector as string;

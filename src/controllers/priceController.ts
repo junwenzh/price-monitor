@@ -87,6 +87,8 @@ const priceController = {
   //     const { username, url } =
   //   }
   //   // //save to fourth table
+
+  // add method to check fetch and update database use fetch
 };
 
 export { priceController };

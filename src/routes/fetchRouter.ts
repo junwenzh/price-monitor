@@ -1,4 +1,5 @@
 import { fetch } from '@/utils/fetch';
+import fetchController from '@/controllers/fetchController';
 import express, { Request, Response } from 'express';
 
 const router = express.Router();
@@ -14,5 +15,13 @@ router.get('/', async (req: Request, res: Response) => {
 
   res.send(response);
 });
+
+router.post(
+  '/fetchprice',
+  fetchController.fetchPrice,
+  (req: Request, res: Response) => {
+    return res.json({ price: res.locals.price });
+  }
+);
 
 export default router;
