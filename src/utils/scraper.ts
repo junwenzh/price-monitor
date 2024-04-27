@@ -1,5 +1,4 @@
 import { chromium } from 'playwright';
-import cheerio from 'cheerio';
 
 async function test() {
   const browser = await chromium.launch();
