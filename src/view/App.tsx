@@ -6,10 +6,10 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
-import Layout from './layouts/Layout';
+import NewProductTracker from './components/NewProductTracker';
 import Register from './components/Register';
 import Login from './components/UserLogin';
-import NewProductTracker from './components/NewProductTracker';
+import Layout from './layouts/Layout';
 
 import Home from './Home';
 
