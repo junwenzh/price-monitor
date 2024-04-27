@@ -159,6 +159,11 @@ const userController = {
         status: 403,
         message: 'Authentication failed: Invalid token',
       });
+      return next({
+        log: 'From userController.authenticateJWT. Invalid token',
+        status: 403,
+        message: 'Authentication failed: Invalid token',
+      });
     }
   },
 };

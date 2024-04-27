@@ -49,29 +49,6 @@ export type ErrorObject = {
   message?: string;
 };
 
-// app.use(
-//   (
-//     err: ErrorObject,
-//     req: Request,
-//     res: Response,
-//     _next: NextFunction
-//   ): void => {
-//     const defaultError: ErrorObject = {
-//       log: 'Express error handler caught unknown middleware error',
-//       status: 500,
-//       message: 'An error occurred',
-//     };
-
-//     const errorObj = Object.assign({}, defaultError, err);
-
-//     console.error(errorObj.log); // Log the error
-
-//     res.status(errorObj.status || 400).json({
-//       message: errorObj.message,
-//     }); // Send an error response
-//   }
-// );
-
 app.use(
   (err: ErrorObject, req: Request, res: Response, next: NextFunction): void => {
     if (res.headersSent) {
@@ -102,5 +79,7 @@ function shutdown() {
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
+
+export default app;
 
 export default app;

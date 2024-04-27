@@ -1,8 +1,8 @@
+import Cookies from 'js-cookie';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logIn } from '../slices/loggedInSlice';
-import Cookies from 'js-cookie';
 
 export default function Login() {
   const [username, setUsername] = useState('');
