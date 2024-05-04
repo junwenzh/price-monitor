@@ -21,6 +21,8 @@ async function fetchPriceFromSelector(
       const price = extractPriceFromText(element.textContent);
       if (price !== 'No match') {
         return price;
+      } else {
+        return 'Element does not contain price';
       }
     }
 
