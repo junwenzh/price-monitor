@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 //import { url } from 'inspector';
 import { priceDb } from '@/database/pricedb';
 import { UpdateQueryParams } from '@/utils/sqlHelpers';
@@ -8,13 +8,14 @@ const priceController = {
   async saveBaseUrl(req: Request, res: Response, next: NextFunction) {
     const url = req.body.url as string;
     const selector = req.body.selector as string;
-    const regex = /^(https?:\/\/[^\/]+)/;
+    const regex = /^(https?:\/\/[^/]+)/;
     const matchedUrl: RegExpMatchArray | null = url.match(regex);
     if (matchedUrl) {
       const baseUrl = matchedUrl[0];
       try {
+        // TODO: Handle duplicate base URLs. Use an update instead of create?
         const result = await priceDb.createBaseUrl(baseUrl, selector);
-        res.json(result);
+        return next();
       } catch (error) {
         console.error('Error saving to the database:', error);
         next(error);

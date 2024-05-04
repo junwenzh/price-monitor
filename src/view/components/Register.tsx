@@ -6,10 +6,6 @@ type ResponseError = {
   message: string;
 };
 
-type ResponseError = {
-  message: string;
-};
-
 export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -31,14 +27,10 @@ export default function Register() {
 
       console.log(response);
 
-      console.log(response);
-
       if (response.ok) {
         // redirect?
         dispatch(logIn({ username }));
       } else {
-        const error: ResponseError = await response.json();
-        console.error(error.message);
         const error: ResponseError = await response.json();
         console.error(error.message);
       }

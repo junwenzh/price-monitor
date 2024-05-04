@@ -12,6 +12,7 @@ import TrackingHistory from './components/TrackingHistory';
 import Login from './components/UserLogin';
 
 import Home from './Home';
+import Layout from './layouts/Layout';
 
 const router = createBrowserRouter(
   createRoutesFromElements(

@@ -1,10 +1,6 @@
+import { createUpdateQuery, UpdateQueryParams } from '@/utils/sqlHelpers';
 import { QueryResult } from 'pg';
 import { db, DB } from './db';
-import {
-  createUpdateQuery,
-  UpdateQueryParams,
-  UpdateQueryResult,
-} from '@/utils/sqlHelpers';
 
 class PriceDB {
   db: DB;
