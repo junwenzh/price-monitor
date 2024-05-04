@@ -16,14 +16,72 @@ class PriceDB {
 
   //method that gets all urls
   async getUrls() {
-    const sql = `SELECT DISTINCT up.url, u.selector FROM user_products up JOIN urls u ON up.url =u.url`;
+    const sql = `
+      SELECT  DISTINCT
+              up.url,
+              u.selector,
+              u.use_fetch,
+              ph.price,
+              rownumber=ROW_NUMBER() OVER(PARTITION BY u.url ORDER BY ph.price_timestamp DESC),
+              ph.price_timestamp
+      FROM    user_products up
+      JOIN    urls u ON up.url=u.url
+      JOIN    pricehistory ph ON up.url=ph.url
+      WHERE   u.valid_url=true AND u.valid_selector=true`;
     try {
       const results = (await this.query(sql)) as QueryResult;
-      return results.rows;
+      return results.rows.filter(row => row.rownumber === 1);
     } catch (error) {
       console.error('Error fetching urls', error);
       throw error;
     }
+  }
+
+  //method to get all products for use in refreshController when checking against target price
+  async getAllProducts() {
+    const sql = `
+      SELECT  up.target_price, up.url, us.email
+      FROM    user_products up
+      JOIN    users us ON up.username = us.username
+      WHERE   up.notify = true`;
+
+    const results = (await this.query(sql)) as QueryResult;
+
+    // @ts-ignore
+    if (results['error']) {
+      // @ts-expect-error abc
+      return [];
+    }
+
+    return results.rows;
+  }
+
+  //method for use in refreshController, to update valid_url and valid_selector and use_fetch from urls
+  async updateValidity(
+    url: string,
+    valid_url: boolean,
+    valid_selector: boolean,
+    use_fetch: boolean
+  ) {
+    const sql = `UPDATE urls
+              SET valid_url = $2,
+              valid_selector = $3,
+              use_fetch = $4
+              WHERE url = $1`;
+
+    const result = await db.query(sql, [
+      url,
+      valid_url,
+      valid_selector,
+      use_fetch,
+    ]);
+    return result;
+  }
+  //method for use in refreshController, to update price from pricehistory
+  async addPriceRecord(url: string, price: number) {
+    const sql = `INSERT INTO pricehistory (url, price) VALUES ($1, $2)`;
+    const result = await db.query(sql, [url, price]);
+    return result;
   }
 
   //methods that allow user to update specific field

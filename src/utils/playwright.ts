@@ -43,15 +43,21 @@ class PlaywrightConnection {
       PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
         blocker.enableBlockingInPage(page);
       });
-      await page.goto(url);
-      await page.addScriptTag({
-        url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
-      });
-      await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
-      await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
-      this.pages[url] = page;
+
+      try {
+        await page.goto(url);
+        await page.addScriptTag({
+          url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
+        });
+        await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
+        await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
+        this.pages[url] = page;
+      } catch (error) {
+        console.error('Playwright failed to open URL', error);
+        //TODO: determine flow if Playwright encounters a connection error
+      }
     }
-    return this.pages[url];
+    return this.pages[url] || 'Connection error';
   }
 
   async getScreenshot(url: string): Promise<string> {
@@ -72,6 +78,11 @@ class PlaywrightConnection {
 
   async getPrice(url: string, selector: string) {
     const page = await this.getPage(url);
+
+    if (typeof page === 'string') {
+      return 'Connection error';
+    }
+
     const element = page.locator(selector);
 
     if (!element) {
@@ -84,7 +95,7 @@ class PlaywrightConnection {
     const matches = price.match(re);
 
     if (!matches) {
-      return 'Price element does not contain number';
+      return 'Element does not contain price';
     }
 
     return matches[0];
