@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-
+import { useSelector } from 'react-redux';
+// import { useNavigate } from 'react-router-dom';
+import { RootState } from '../store';
 interface Product {
   url: string;
   user_note: string;
@@ -10,16 +12,19 @@ interface Product {
 }
 
 export default function TrackingHistory() {
+  // const navigate = useNavigate();
+  const username = useSelector((state: RootState) => state.isLoggedIn.username);
+  console.log(username);
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/price/getProductInfo');
+        const response = await fetch(`/api/price/${username}`);
         if (!response.ok) throw new Error('Network response was not ok.');
         const data = await response.json();
-        setProducts(data);
+        setProducts(data.data);
       } catch (error) {
         setError('Failed to fetch data');
         console.error(error);
@@ -28,6 +33,7 @@ export default function TrackingHistory() {
 
     fetchProducts();
   }, []);
+  console.log('list of products', products);
 
   return (
     <div>
