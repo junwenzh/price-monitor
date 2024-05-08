@@ -31,7 +31,7 @@ class PriceDB {
               u.selector,
               u.use_fetch,
               ph.price,
-              rownumber=ROW_NUMBER() OVER(PARTITION BY u.url ORDER BY ph.price_timestamp DESC),
+              ROW_NUMBER() OVER(PARTITION BY u.url ORDER BY ph.price_timestamp DESC) as rownumber,
               ph.price_timestamp
       FROM    user_products up
       JOIN    urls u ON up.url=u.url
@@ -39,7 +39,11 @@ class PriceDB {
       WHERE   u.valid_url=true AND u.valid_selector=true`;
     try {
       const results = (await this.query(sql)) as QueryResult;
-      return results.rows.filter(row => row.rownumber === 1);
+      if (results.rows) {
+        return results.rows.filter(row => row.rownumber === 1);
+      } else {
+        throw new Error('Results has no rows property');
+      }
     } catch (error) {
       console.error('Error fetching urls', error);
       throw error;
