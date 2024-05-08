@@ -40,7 +40,7 @@ class PriceDB {
     try {
       const results = (await this.query(sql)) as QueryResult;
       if (results.rows) {
-        return results.rows.filter(row => row.rownumber === 1);
+        return results.rows.filter(row => row.rownumber === '1');
       } else {
         throw new Error('Results has no rows property');
       }
