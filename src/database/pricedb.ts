@@ -1,10 +1,11 @@
+//import { createUpdateQuery, UpdateQueryParams } from '@/utils/sqlHelpers';
+export interface UpdateDetails {
+  field: string;
+  value: any;
+}
+
 import { QueryResult } from 'pg';
 import { db, DB } from './db';
-import {
-  createUpdateQuery,
-  UpdateQueryParams,
-  UpdateQueryResult,
-} from '@/utils/sqlHelpers';
 
 class PriceDB {
   db: DB;
@@ -16,23 +17,132 @@ class PriceDB {
     this.pool = db.getPool();
     this.query = db.query;
   }
+
+  // TypeScript interface for type-safe updates
+
   //crud
 
+  //METHODS FOR USE IN REFRESHCONTROLLER
   //method that gets all urls
   async getUrls() {
-    const sql = `SELECT DISTINCT up.url, u.selector FROM user_products up JOIN urls u ON up.url =u.url`;
+    const sql = `
+      SELECT  DISTINCT
+              up.url,
+              u.selector,
+              u.use_fetch,
+              ph.price,
+              ROW_NUMBER() OVER(PARTITION BY u.url ORDER BY ph.price_timestamp DESC) as rownumber,
+              ph.price_timestamp
+      FROM    user_products up
+      JOIN    urls u ON up.url=u.url
+      JOIN    pricehistory ph ON up.url=ph.url
+      WHERE   u.valid_url=true AND u.valid_selector=true`;
     try {
       const results = (await this.query(sql)) as QueryResult;
-      return results.rows;
+      if (results.rows) {
+        return results.rows.filter(row => row.rownumber === '1');
+      } else {
+        throw new Error('Results has no rows property');
+      }
     } catch (error) {
       console.error('Error fetching urls', error);
       throw error;
     }
   }
 
+  //method to get all products for use in refreshController when checking against target price
+  async getAllProducts() {
+    const sql = `
+      SELECT  up.target_price, up.url, us.email
+      FROM    user_products up
+      JOIN    users us ON up.username = us.username
+      WHERE   up.notify = true`;
+
+    const results = (await this.query(sql)) as QueryResult;
+
+    // @ts-expect-error ts error only
+    if (results['error']) {
+      return [];
+    }
+
+    return results.rows;
+  }
+
+  //method for use in refreshController, to update valid_url and valid_selector and use_fetch from urls
+  async updateValidity(
+    url: string,
+    valid_url: boolean,
+    valid_selector: boolean,
+    use_fetch: boolean
+  ) {
+    const sql = `UPDATE urls
+              SET valid_url = $2,
+              valid_selector = $3,
+              use_fetch = $4
+              WHERE url = $1`;
+
+    const result = await db.query(sql, [
+      url,
+      valid_url,
+      valid_selector,
+      use_fetch,
+    ]);
+    return result;
+  }
+  //method for use in refreshController, to update price from pricehistory
+  async addPriceRecord(url: string, price: number) {
+    const sql = `INSERT INTO pricehistory (url, price) VALUES ($1, $2)`;
+    const result = await db.query(sql, [url, price]);
+    return result;
+  }
+
   //methods that allow user to update specific field
+  // async updateField() {
+  //   const sql = ``;
+  //   try {
+  //     const results = (await this.query(sql, [username])) as QueryResult;
+  //     console.log('Results:', results.rows);
+  //     return results.rows;
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw error;
+  //   }
+  // }
+
+  async updateProductInfo(
+    username: string,
+    url: string,
+    updates: UpdateDetails[]
+  ) {
+    const setClauses = updates.map(
+      (upd, index) => `${upd.field} = $${index + 1}`
+    );
+    const values = updates.map(upd => upd.value);
+
+    const sql = `UPDATE user_products SET ${setClauses.join(', ')} WHERE username = $${updates.length + 1} AND url = $${updates.length + 2}`;
+    values.push(username, url); // Add username and url to the end of the values array
+
+    try {
+      await this.db.query(sql, values);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 
   //method to delete a user product
+  async deleteTrackedItem(username: string, url: string) {
+    console.log(url);
+    const sql = ``;
+    try {
+      const results = (await this.query(sql, [username])) as QueryResult;
+      console.log('Results:', results.rows);
+      return results.rows;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 
   //method to add new base url
 
@@ -46,22 +156,6 @@ class PriceDB {
       return results.rows;
     } catch (error) {
       console.error('Error fetching product info:', error);
-      throw error;
-    }
-  }
-
-  async updateProduct(params: UpdateQueryParams) {
-    const queryData = createUpdateQuery(params);
-    if (!queryData) {
-      throw new Error('No valid fields provided for update');
-    }
-
-    try {
-      const { sqlString, values } = queryData;
-      const result = await this.pool.query(sqlString, values);
-      return result.rows; // Or handle the response as needed
-    } catch (error) {
-      console.error('Error executing update query:', error);
       throw error;
     }
   }
@@ -93,8 +187,6 @@ class PriceDB {
       throw error;
     }
   }
-
-  //method to query a base url
 
   async newTrackedItem(
     url: string,
@@ -134,215 +226,3 @@ class PriceDB {
 const priceDb = new PriceDB(db);
 
 export { priceDb };
-// type User = {
-//   username: string;
-//   email: string;
-//   password: string;
-// };
-
-//users: username, password, email
-//urls: url, selector
-//baseurls: baseurl, selector
-//pricehistory: url+price_timestamp, url (ref), price, price_timestamp
-//user_products: username+url, username (ref), url (ref), user_note, target_price
-
-// class PriceDB {
-//   pool;
-//   query;
-
-//   constructor(db: DB) {
-//     this.pool = db.getPool();
-//     this.query = db.query;
-//   }
-
-//   async getPrice(username: string) {
-//     const sql = `select username, email, password from users where username = $1`;
-//     const results = await this.query(sql, [username]);
-//     return this.validateResults(results);
-//   }
-
-//   async newProductTracking(url: string, selector: string, username: string, user_note: string, price: number) {
-//     try {
-//         await this.query('BEGIN');
-
-//         const insertUrl = 'insert into urls (url, selector) values ($1, $2) on conflict (url) do update set selector = excluded.selector';
-//         await this.query(insertUrl, [url, selector]);
-
-//         const insertPrice = 'insert into pricehistory (url, price) VALUES ($1, $2)';
-//         await this.query(insertPrice, [url, price]);
-
-//         const insertUserProduct = 'insert into user_products (url, username, user_note, target_price) VALUES ($1, $2, $3, $4) on conflict (url, username) do update set user_note = excluded.user_note';
-//         await this.query(insertUserProduct, [url, username, user_note]);
-
-//         await this.query('COMMIT');
-//         return { success: true };
-//     } catch (e) {
-//         await this.query('ROLLBACK');
-//         throw e;  // Rethrow the error after rollback
-//     } finally {
-//         this.release();
-//     }
-// }
-// (url: string, selector: string) {
-//     const sql =
-//       'insert into urls (url, selector) values ($1, $2) returning url, selector';
-//     const results = await this.query(sql, [url, selector]);
-//     return this.validateResults(results);
-//   }
-
-//   async createSelector(url: string, selector: string) {
-//     const sql =
-//       'insert into urls (url, selector) values ($1, $2) returning url, selector';
-//     const results = await this.query(sql, [url, selector]);
-//     return this.validateResults(results);
-//   }
-//   async createPriceHistory(url: string, price: number) {
-//     const sql =
-//       'insert into pricehistory (url, price) VALUES ($1, $2)';
-//     const results = await this.query(sql, [url, price]);
-//     return this.validateResults(results);
-//   }
-
-//   async createUserProduct(url: string, username: string, user_note: string, target_price: number) {
-//     const sql =
-//       'insert into user_products (url, username, user_note, target_price) VALUES ($1, $2, $3, $4)';
-//     const results = await this.query(sql, [url, username, user_note, target_price]);
-//     return this.validateResults(results);
-//   }
-//   await client.query(
-//     `INSERT INTO urls (url, selector) VALUES ($1, $2)
-//     ON CONFLICT (url) DO UPDATE SET selector = EXCLUDED.selector`,
-//     [url, selector]
-// );
-
-// // Insert new price history entry
-// await client.query(
-//     `INSERT INTO pricehistory (url, price, price_timestamp) VALUES ($1, $2, $3)`,
-//     [url, price, price_timestamp]
-// );
-
-// // Insert or update user products entry
-// await client.query(
-//     `INSERT INTO user_products (url, username, user_note) VALUES ($1, $2, $3)
-//     ON CONFLICT (url, username) DO UPDATE SET user_note = EXCLUDED.user_note`,
-//     [url, username, user_note]
-// );
-//   async updateUser(username: string, newHash?: string, newEmail?: string) {
-//     //allow user to update either password, email or both
-//     let sql = 'update users set ';
-//     let updatedValues = '';
-//     const params = [];
-
-//     if (newHash) {
-//       updatedValues += 'password = $1';
-//       params.push(newHash);
-//     }
-
-//     if (newEmail) {
-//       if (params.length) {
-//         updatedValues += ', ';
-//       }
-//       updatedValues += `email = $${params.length + 1}`;
-//       params.push(newEmail);
-//     }
-
-//     sql += `${updatedValues} where username = $${params.length + 1}`;
-//     params.push(username);
-
-//     const results = await this.query(sql, params);
-//     return this.validateResults(results);
-//   }
-
-//   validateResults(results: QueryResult | { error: unknown }): {
-//     message?: string;
-//     error?: unknown;
-//     username?: string;
-//     email?: string;
-//     password?: string;
-//   } {
-//     if ('error' in results) {
-//       return {
-//         message: 'Database connection failed',
-//         error: results.error,
-//       };
-//     }
-
-//     if (results.rowCount === 0) {
-//       return {
-//         message: 'Operation failed',
-//       };
-//     }
-
-//     const user: User = results.rows[0];
-
-//     return {
-//       username: user.username,
-//       email: user.email,
-//       password: user.password,
-//     };
-//   }
-// }
-
-// const priceDb = new PriceDB(db);
-
-// export { priceDb };
-
-// pricemonitor=# CREATE TABLE users (
-//     pricemonitor(# username VARCHAR(50) PRIMARY KEY,
-//     pricemonitor(# password VARCHAT(100) NOT NULL,
-//     pricemonitor(# password VARCHAR(100) NOT NULL,
-//     pricemonitor(# email VARCHAR(100) UNIQUE NOT NULL
-//     pricemonitor(# );
-//     ERROR:  type "varchat" does not exist
-//     LINE 3: password VARCHAT(100) NOT NULL,
-//                      ^
-//     pricemonitor=# CREATE TABLE users (
-//     pricemonitor(# username VARCHAR(50) PRIMARY KEY,
-//     pricemonitor(# password VARCHAR(100) NOT NULL,
-//     pricemonitor(# email VARCHAR(100) UNIQUE NOT NULL
-//     pricemonitor(# );
-//     CREATE TABLE
-//     pricemonitor=# CREATE TABLE urls (
-//     pricemonitor(# url VARCHAR PRIMARY KEY,
-//     pricemonitor(# selector VARCHAR NOT NULL
-//     pricemonitor(# );
-//     CREATE TABLE
-//     pricemonitor=# CREATE TABLE baseurls (
-//     pricemonitor(# baseurl VARCHAR PRIMARY KEY,
-//     pricemonitor(# selector VARCHAR NOT NULL
-//     pricemonitor(# );
-//     CREATE TABLE
-//     pricemonitor=# CREATE TABLE pricehistory (
-//     pricemonitor(# url VARCHAR urls(url),
-//     pricemonitor(# price REAL NOT NULL,
-//     pricemonitor(# ;
-//     pricemonitor(# ;
-//     pricemonitor(# );
-//     ERROR:  syntax error at or near "urls"
-//     LINE 2: url VARCHAR urls(url),
-//                         ^
-//     pricemonitor=# CREATE TABLE pricehistory (
-//     pricemonitor(# url VARCHAR REFERENCES urls(url),
-//     pricemonitor(# price REAL NOT NULL,
-//     pricemonitor(# price_timestamp TIMESTAMP DEFAULT NOW(),
-//     pricemonitor(# PRIMARY KEY(url price_timestamp)
-//     pricemonitor(# );
-//     ERROR:  syntax error at or near "price_timestamp"
-//     LINE 5: PRIMARY KEY(url price_timestamp)
-//                             ^
-//     pricemonitor=# CREATE TABLE pricehistory (
-//     url VARCHAR REFERENCES urls(url),
-//     price REAL NOT NULL,
-//     price_timestamp TIMESTAMP DEFAULT NOW(),
-//     PRIMARY KEY(url, price_timestamp)
-//     );
-//     CREATE TABLE
-//     pricemonitor=# CREATE TABLE user_products (
-//     pricemonitor(# username VARCHAR REFERENCES users(username),
-//     pricemonitor(# url VARCHAR REFERENCES urls(url),
-//     pricemonitor(# user_note VARCHAR,
-//     pricemonitor(# target_price REAL,
-//     pricemonitor(# PRIMARY KEY(username, url)
-//     pricemonitor(# );
-//     CREATE TABLE
-//     pricemonitor=#

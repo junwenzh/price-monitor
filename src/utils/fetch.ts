@@ -1,33 +1,48 @@
-import axios, { AxiosResponse } from 'axios';
+import jsdom from 'jsdom';
 
-async function fetch(url: string): Promise<AxiosResponse<any, any>> {
-  const fullUrl = ensureHttp(url);
-
+async function fetchPriceFromSelector(
+  url: string,
+  selector: string
+): Promise<string> {
   try {
-    const response = await axios.get(fullUrl, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-      },
-    });
+    const response = await fetch(url);
 
-    if (response.status === 200) {
-      return response.data;
-    } else {
-      throw new Error(`Response is ${response.status}`);
+    if (!response.ok) {
+      return 'Connection error';
     }
+
+    const { JSDOM } = jsdom;
+    const html = await response.text();
+
+    const dom = new JSDOM(html);
+    const element = dom.window.document.querySelector(selector);
+
+    if (element?.textContent) {
+      const price = extractPriceFromText(element.textContent);
+      if (price !== 'No match') {
+        return price;
+      } else {
+        return 'Element does not contain price';
+      }
+    }
+
+    return 'Element not found';
   } catch (error) {
-    console.error('Error fetching HTML:', error);
-    throw error;
+    console.error(error);
+    return 'Connection error';
   }
 }
 
-function ensureHttp(url: string): string {
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    return `https://${url}`;
+function extractPriceFromText(text: string): string {
+  const regex = /^\$?\d+(?:\.\d{1,2})?$/;
+  const match = text.match(regex);
+
+  if (!match) {
+    return 'No match';
   }
 
-  return url;
+  const price = match[0];
+  return price;
 }
 
-export { fetch };
+export default fetchPriceFromSelector;

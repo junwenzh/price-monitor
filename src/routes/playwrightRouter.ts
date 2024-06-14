@@ -1,6 +1,6 @@
 //import { scrape, scrape2 } from '@/utils/playwright';
-import express, { Request, Response } from 'express';
 import playwrightController from '@/controllers/playwrightController';
+import express, { Request, Response } from 'express';
 
 const router = express.Router();
 
@@ -14,17 +14,9 @@ router.post(
 
 router.post(
   '/coordinates',
-  playwrightController.getElementAtXY,
+  playwrightController.getElementAtCoordinates,
   (req: Request, res: Response) => {
     return res.json({ price: res.locals.price, selector: res.locals.selector });
-  }
-);
-
-router.post(
-  '/getprice',
-  playwrightController.getPrice,
-  (req: Request, res: Response) => {
-    return res.json({ price: res.locals.price });
   }
 );
 

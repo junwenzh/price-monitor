@@ -1,4 +1,3 @@
-import fetchRouter from '@/routes/fetchRouter';
 import playwrightRouter from '@/routes/playwrightRouter';
 import priceRouter from '@/routes/priceRouter';
 import userRouter from '@/routes/userRouter';
@@ -30,8 +29,6 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 app.use('/api/scrape', playwrightRouter);
-
-app.use('/api/fetch', fetchRouter);
 
 app.use('/api/users', userRouter);
 
@@ -79,7 +76,5 @@ function shutdown() {
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
-
-export default app;
 
 export default app;

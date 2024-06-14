@@ -1,9 +1,8 @@
-import { playwrightConnection, getPriceElements } from '@/utils/playwright';
+import { playwrightConnection } from '@/utils/playwright';
 import { Request, Response, NextFunction } from 'express';
 import { ErrorObject } from '@/server';
 
 class PlaywrightController {
-  // original scrape
   async getScreenshot(req: Request, res: Response, next: NextFunction) {
     const url = req.body.url as string;
     if (!url) {
@@ -14,18 +13,18 @@ class PlaywrightController {
       });
     }
 
-    const page = await playwrightConnection.getPage(url);
-    const screenshotBuffer = await page.screenshot({ fullPage: false });
-    const screenshotString = screenshotBuffer.toString('base64');
+    const screenshotString = await playwrightConnection.getScreenshot(url);
     res.locals.screenshot = screenshotString;
     return next();
   }
 
-  async getElementAtXY(req: Request, res: Response, next: NextFunction) {
+  async getElementAtCoordinates(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     const url = req.body.url as string;
     const coordinates = req.body.coordinates as { x: number; y: number };
-
-    // console.log(url, coordinates);
 
     if (!url || !coordinates) {
       return next({
@@ -35,25 +34,25 @@ class PlaywrightController {
       });
     }
 
-    const page = await playwrightConnection.getPage(url);
+    const price = await playwrightConnection.getElementAtCoordinates(
+      url,
+      coordinates
+    );
 
-    // console.log('page', page);
+    if (!price) {
+      const err: ErrorObject = {
+        log: 'Could not find an element with number at the specified coordinates',
+        status: 400,
+        message: 'Error locating the price element',
+      };
 
-    const elements = await page.evaluate(getPriceElements, coordinates);
-
-    // console.log('elements', elements);
-
-    if (elements.price !== 'Not found') {
-      res.locals.price = elements.price;
-      res.locals.selector = elements.selector;
-      return next();
-    } else {
-      return next({
-        message: {
-          err: 'Price not found',
-        },
-      });
+      return next(err);
     }
+
+    res.locals.price = price.price;
+    res.locals.selector = price.selector;
+
+    return next();
   }
 
   async getPrice(req: Request, res: Response, next: NextFunction) {
@@ -70,39 +69,21 @@ class PlaywrightController {
       return next(err);
     }
 
-    const page = await playwrightConnection.getPage(url);
-    const element = page.locator(selector);
+    const price = await playwrightConnection.getPrice(url, selector);
 
-    if (!element) {
+    if (
+      price === 'Element not found' ||
+      price === 'Price element does not contain number'
+    ) {
       const err: ErrorObject = {
-        log: 'From playwrightController.getPrice. Element not found at selector',
-        status: 500,
+        log: 'Could not find the price element',
+        status: 400,
+        message: 'Error locating the price',
       };
       return next(err);
     }
 
-    const price = await element.textContent();
-
-    if (!price) {
-      const err: ErrorObject = {
-        log: 'From playwrightController.getPrice. Element has no text',
-        status: 500,
-      };
-      return next(err);
-    }
-    // convert the price to a number
-    const re = /\d+(\.\d+)?/;
-    const matches = price.match(re);
-
-    if (!matches) {
-      const err: ErrorObject = {
-        log: 'From playwrightController.getPrice. Element text has no price',
-        status: 500,
-      };
-      return next(err);
-    }
-
-    res.locals.price = matches[0];
+    res.locals.price = price;
     return next();
   }
 }

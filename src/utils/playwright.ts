@@ -3,8 +3,6 @@ import fetch from 'cross-fetch';
 import { Browser, BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
-// import { CssSelector } from 'css-selector-generator/types/types';
-// import { getCssSelector } from 'css-selector-generator';
 
 class PlaywrightConnection {
   private browser?: Browser;
@@ -45,15 +43,62 @@ class PlaywrightConnection {
       PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
         blocker.enableBlockingInPage(page);
       });
-      await page.goto(url);
-      await page.addScriptTag({
-        url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
-      });
-      await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
-      await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
-      this.pages[url] = page;
+
+      try {
+        await page.goto(url);
+        await page.addScriptTag({
+          url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
+        });
+        await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
+        await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
+        this.pages[url] = page;
+      } catch (error) {
+        console.error('Playwright failed to open URL', error);
+        //TODO: determine flow if Playwright encounters a connection error
+      }
     }
-    return this.pages[url];
+    return this.pages[url] || 'Connection error';
+  }
+
+  async getScreenshot(url: string): Promise<string> {
+    const page = await this.getPage(url);
+    const screenshotBuffer = await page.screenshot({ fullPage: false });
+    const screenshotString = screenshotBuffer.toString('base64');
+    return screenshotString;
+  }
+
+  async getElementAtCoordinates(
+    url: string,
+    coordinates: { x: number; y: number }
+  ) {
+    const page = await this.getPage(url);
+    const priceElement = await page.evaluate(getNumberElement, coordinates);
+    return priceElement;
+  }
+
+  async getPrice(url: string, selector: string) {
+    const page = await this.getPage(url);
+
+    if (typeof page === 'string') {
+      return 'Connection error';
+    }
+
+    const element = page.locator(selector);
+
+    if (!element) {
+      return 'Element not found';
+    }
+
+    const price = (await element.textContent()) || '';
+
+    const re = /\d+(\.\d+)?/;
+    const matches = price.match(re);
+
+    if (!matches) {
+      return 'Element does not contain price';
+    }
+
+    return matches[0];
   }
 
   async closeBrowser() {
@@ -65,11 +110,9 @@ class PlaywrightConnection {
 
 const playwrightConnection = new PlaywrightConnection();
 
-function getPriceElements({ x, y }: { x: number; y: number }) {
-  const elems = document.elementsFromPoint(x, y); // array
-  // ##.##, $##.##
-  const priceEle = elems.find((element: Element) => {
-    // const text = (element as HTMLElement).innerText;
+function getNumberElement({ x, y }: { x: number; y: number }) {
+  const elements = document.elementsFromPoint(x, y); // array
+  const numberElement = elements.find((element: Element) => {
     const children = Array.from(element.childNodes);
     const textNodes = children.filter(node => node.nodeType === Node.TEXT_NODE);
     const texts = textNodes.map(node => node.textContent?.trim());
@@ -78,23 +121,16 @@ function getPriceElements({ x, y }: { x: number; y: number }) {
     return regex.test(text);
   });
 
-  if (priceEle) {
-    // @ts-expect-error asdf
-    const selectedEle = CssSelectorGenerator.getCssSelector(priceEle);
-    const price = (priceEle as HTMLElement).innerText;
+  if (numberElement) {
+    // @ts-expect-error CssSelectorGenerator will come from script tag
+    const selector = CssSelectorGenerator.getCssSelector(numberElement);
+    const price = (numberElement as HTMLElement).innerText;
 
     return {
-      price: price,
-      selector: selectedEle,
-    };
-  } else {
-    return {
-      price: 'Not found',
-      x: x,
-      y: y,
-      elements: elems,
+      price,
+      selector,
     };
   }
 }
 
-export { playwrightConnection, getPriceElements };
+export { playwrightConnection };
