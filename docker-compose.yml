@@ -1,0 +1,6 @@
+services:
+  price-monitor:
+    build: .
+    ports:
+      - '8084:3000'
+    restart: unless-stopped

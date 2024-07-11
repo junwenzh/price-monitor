@@ -10,7 +10,7 @@ import refreshRouter from './routes/refreshRouter';
 import { playwrightConnection } from './utils/playwright';
 
 const app = express();
-const port = 8084;
+const port = 3000;
 
 app.use(cors({ origin: 'http://localhost:8084', credentials: true }));
 app.use(cookieParser());
@@ -64,7 +64,7 @@ app.use(
   }
 );
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`App listening at http://localhost:${port}`);
   //testUserDb();
 });

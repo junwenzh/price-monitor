@@ -21,7 +21,7 @@ import { RootState } from '../store';
 export default function NewProductTracker() {
   const navigate = useNavigate();
   const username = useSelector((state: RootState) => state.isLoggedIn.username);
-  console.log(username);
+  // console.log(username);
   // const dispatch = useDispatch();
   // const {
   //   url, img, coordinates, offsetCoords, showConfirmation,
@@ -119,7 +119,7 @@ export default function NewProductTracker() {
   };
 
   const handleClick = (event: MouseEvent) => {
-    const imageEle = document.querySelector('#screenshot')!;
+    const imageEle = document.querySelector('#screenshot')! as HTMLImageElement;
     const rect = imageEle.getBoundingClientRect()!;
 
     console.log('rect', rect);
@@ -132,6 +132,7 @@ export default function NewProductTracker() {
       x: event.clientX,
       y: event.clientY + window.scrollY,
     };
+
     setCoordinates({ ...coords });
 
     const offsetC = {
@@ -139,10 +140,19 @@ export default function NewProductTracker() {
       y: event.clientY + window.scrollY - (rect.y + window.scrollY),
     };
 
-    setOffsetCoords({ ...offsetC });
+    // get the max size of the current image
+    // x * currentSize / 1000 = offsetC
+    // x = offsetC / currentSize * 1000
+    const currentImageWidth = imageEle.width;
+    const scale = 1 / (currentImageWidth / 1000);
 
-    console.log('coords', coords);
-    console.log('offset coords', offsetC);
+    setOffsetCoords({
+      x: offsetC.x * scale,
+      y: offsetC.y * scale,
+    });
+
+    // console.log('coords', coords);
+    // console.log('offset coords', offsetC);
   };
 
   useEffect(() => {
@@ -305,7 +315,7 @@ export default function NewProductTracker() {
         <img
           id="screenshot"
           src={`data:image/jpeg;base64,${img}`}
-          className="w-desktop h-desktop min-w-desktop"
+          className="w-auto h-auto min-w-desktop"
         />
       </div>
     </div>
