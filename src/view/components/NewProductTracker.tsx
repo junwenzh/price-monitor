@@ -66,9 +66,13 @@ export default function NewProductTracker() {
       },
       body: JSON.stringify({ url }),
     })
-      .then(response => response.json())
+      .then(response => {
+        console.log('Received response');
+        console.log(response);
+        return response.json();
+      })
       .then(data => {
-        console.log('Received screenshot');
+        console.log('Parsed response');
         console.log(data);
         setImg(data.screenshot);
         loadingEle?.classList.add('hidden');

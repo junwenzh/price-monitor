@@ -9,7 +9,7 @@ router.post(
   playwrightController.getScreenshot,
   (req: Request, res: Response) => {
     console.log('Sending screenshot to front end');
-    console.log(res.locals.screenshot);
+    console.log(res.locals.screenshot.slice(0, 10));
     return res.json({ screenshot: res.locals.screenshot });
   }
 );
