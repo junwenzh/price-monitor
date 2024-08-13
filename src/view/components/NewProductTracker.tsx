@@ -58,6 +58,7 @@ export default function NewProductTracker() {
     loadingEle?.classList.remove('hidden');
 
     event.preventDefault();
+
     fetch(`/api/scrape/screenshot`, {
       method: 'POST',
       headers: {
@@ -67,6 +68,8 @@ export default function NewProductTracker() {
     })
       .then(response => response.json())
       .then(data => {
+        console.log('Received screenshot');
+        console.log(data);
         setImg(data.screenshot);
         loadingEle?.classList.add('hidden');
       });
