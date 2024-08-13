@@ -1,10 +1,13 @@
-import { playwrightConnection } from '@/utils/playwright';
-import { Request, Response, NextFunction } from 'express';
 import { ErrorObject } from '@/server';
+import { playwrightConnection } from '@/utils/playwright';
+import { NextFunction, Request, Response } from 'express';
 
 class PlaywrightController {
   async getScreenshot(req: Request, res: Response, next: NextFunction) {
     const url = req.body.url as string;
+
+    console.log(`Received url ${url}`);
+
     if (!url) {
       return next({
         message: {
@@ -12,6 +15,8 @@ class PlaywrightController {
         },
       });
     }
+
+    console.log('Opening url with playwright');
 
     const screenshotString = await playwrightConnection.getScreenshot(url);
     res.locals.screenshot = screenshotString;

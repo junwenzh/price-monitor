@@ -54,7 +54,7 @@ const priceController = {
       return next();
     }
 
-    console.log(result);
+    // console.log(result);
     res.locals.data = result;
     next();
   },

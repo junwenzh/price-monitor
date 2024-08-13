@@ -36,21 +36,29 @@ class PlaywrightConnection {
   }
 
   async getPage(url: string): Promise<Page> {
+    console.log(`Finding playwright page for ${url}`);
+
     const context = await this.getContext();
+
     if (!(url in this.pages)) {
-      console.log('Loading new page');
+      console.log('Starting a new empty page in playwright');
       const page = await context.newPage();
+
+      console.log('Adding adblock to page');
       PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
         blocker.enableBlockingInPage(page);
       });
 
       try {
+        console.log(`Accessing url ${url}`);
         await page.goto(url);
+        console.log('Adding css selector generator script');
         await page.addScriptTag({
           url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
         });
         await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
         await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
+        console.log('Page finished loading');
         this.pages[url] = page;
       } catch (error) {
         console.error('Playwright failed to open URL', error);
@@ -62,7 +70,9 @@ class PlaywrightConnection {
 
   async getScreenshot(url: string): Promise<string> {
     const page = await this.getPage(url);
+    console.log('Taking a screenshot');
     const screenshotBuffer = await page.screenshot({ fullPage: false });
+    console.log('Converting screenshot to string');
     const screenshotString = screenshotBuffer.toString('base64');
     return screenshotString;
   }
