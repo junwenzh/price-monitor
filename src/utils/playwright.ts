@@ -70,8 +70,8 @@ class PlaywrightConnection {
   }
 
   async getScreenshot(url: string): Promise<string> {
-    console.log(page);
     const page = await this.getPage(url);
+    console.log(page);
     console.log('Taking a screenshot');
     const screenshotBuffer = await page.screenshot({ fullPage: false });
     console.log(screenshotBuffer);
