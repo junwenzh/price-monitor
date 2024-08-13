@@ -1,5 +1,3 @@
-import { PlaywrightBlocker } from '@cliqz/adblocker-playwright';
-import fetch from 'cross-fetch';
 import { Browser, BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
@@ -44,10 +42,10 @@ class PlaywrightConnection {
       console.log('Starting a new empty page in playwright');
       const page = await context.newPage();
 
-      console.log('Adding adblock to page');
-      PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
-        blocker.enableBlockingInPage(page);
-      });
+      // console.log('Adding adblock to page');
+      // PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
+      //   blocker.enableBlockingInPage(page);
+      // });
 
       try {
         console.log(`Accessing url ${url}`);
@@ -57,8 +55,18 @@ class PlaywrightConnection {
           url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.8/index.min.js',
         });
         console.log('Waiting for page to finish loading');
-        await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
-        await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
+
+        try {
+          // Wait for 'networkidle' load state with a timeout
+          await this.waitForLoadStateWithTimeout(page, 'networkidle');
+
+          // Continue to wait for 'domcontentloaded' load state with a timeout
+          await this.waitForLoadStateWithTimeout(page, 'domcontentloaded');
+        } catch (error) {
+          console.error('Error occurred:', error);
+          // Handle the error or timeout scenario
+        }
+
         console.log('Page finished loading');
         this.pages[url] = page;
       } catch (error) {
@@ -67,6 +75,19 @@ class PlaywrightConnection {
       }
     }
     return this.pages[url] || 'Connection error';
+  }
+
+  async waitForLoadStateWithTimeout(page: any, loadState: any, timeout = 500) {
+    // Create a promise that rejects after a timeout
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), timeout)
+    );
+
+    // Create a promise for waiting for the load state
+    const loadStatePromise = page.waitForLoadState(loadState);
+
+    // Use Promise.race to continue when either the timeout or the load state promise resolves/rejects
+    return Promise.race([loadStatePromise, timeoutPromise]);
   }
 
   async getScreenshot(url: string): Promise<string> {
