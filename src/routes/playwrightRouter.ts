@@ -11,7 +11,8 @@ router.post(
     console.log('Sending screenshot to front end');
     console.log(res.locals.screenshot.slice(0, 10));
     console.log(res.locals.screenshot.length);
-    return res.json({ screenshot: res.locals.screenshot.slice(0, 100) });
+    return res.json({ screenshot: '123' });
+    // return res.json({ screenshot: res.locals.screenshot.slice(0, 100) });
   }
 );
 
