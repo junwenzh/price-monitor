@@ -52,31 +52,37 @@ export default function NewProductTracker() {
     setUrl(event.target.value);
   };
 
-  const handleUrlSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUrlSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     const loadingEle = document.querySelector('#loadingSpin');
 
     loadingEle?.classList.remove('hidden');
 
     event.preventDefault();
 
-    fetch(`/api/scrape/screenshot`, {
+    const response = await fetch(`/api/scrape/screenshot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ url }),
-    })
-      .then(response => {
-        console.log('Received response');
-        console.log(response);
-        return response.json();
-      })
-      .then(data => {
-        console.log('Parsed response');
-        console.log(data);
-        setImg(data.screenshot);
-        loadingEle?.classList.add('hidden');
-      });
+    });
+
+    console.log(response);
+
+    const json = await response.json();
+
+    console.log(json);
+    // .then(response => {
+    //   console.log('Received response');
+    //   console.log(response);
+    //   return response.json();
+    // })
+    // .then(data => {
+    //   console.log('Parsed response');
+    //   console.log(data);
+    //   setImg(data.screenshot);
+    //   loadingEle?.classList.add('hidden');
+    // });
   };
 
   // useEffect(() => {
