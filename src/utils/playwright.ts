@@ -54,8 +54,9 @@ class PlaywrightConnection {
         await page.goto(url);
         console.log('Adding css selector generator script');
         await page.addScriptTag({
-          url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
+          url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.8/index.min.js',
         });
+        console.log('Waiting for page to finish loading');
         await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
         await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
         console.log('Page finished loading');
@@ -69,6 +70,7 @@ class PlaywrightConnection {
   }
 
   async getScreenshot(url: string): Promise<string> {
+    console.log(page);
     const page = await this.getPage(url);
     console.log('Taking a screenshot');
     const screenshotBuffer = await page.screenshot({ fullPage: false });
