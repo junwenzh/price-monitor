@@ -72,6 +72,7 @@ class PlaywrightConnection {
     const page = await this.getPage(url);
     console.log('Taking a screenshot');
     const screenshotBuffer = await page.screenshot({ fullPage: false });
+    console.log(screenshotBuffer);
     console.log('Converting screenshot to string');
     const screenshotString = screenshotBuffer.toString('base64');
     return screenshotString;
