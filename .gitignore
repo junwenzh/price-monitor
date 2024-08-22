@@ -1,6 +1,9 @@
 node_modules
 dist
 .env
+cron.log
+tests-examples
+src/__tests__
 /test-results/
 /playwright-report/
 /blob-report/
