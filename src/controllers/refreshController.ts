@@ -2,8 +2,8 @@ import { priceDb } from '@/database/pricedb';
 // import { ErrorObject } from '@/server';
 import fetchPriceFromSelector from '@/utils/fetch';
 import { playwrightConnection } from '@/utils/playwright';
-import { NextFunction, Request, Response } from 'express';
 import sendEmail from '@/utils/sendEmail';
+import { NextFunction, Request, Response } from 'express';
 
 // query database for urls > [{url, selectors}]
 
@@ -114,8 +114,13 @@ const refreshController = {
           sendEmail({
             to: user.email,
             from: 'noreply@juncafe.com',
-            subject: 'Price updated',
-            htmlBody: `${url.url} price updated to ${url.latest_price}`,
+            subject: 'Price Drop Alert!',
+            item: '',
+            url: url.url,
+            targetPrice: user.target_price,
+            oldPrice: 0,
+            currentPrice: url.latest_price || 0,
+            unsubscribeUrl: '',
           });
         }
       });
