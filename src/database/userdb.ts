@@ -1,5 +1,5 @@
-import { QueryResult } from 'pg';
-import { db, DB } from './db';
+import { DatabaseError, QueryResult } from 'pg';
+import { DB, DatabaseResponseError } from './db';
 
 type User = {
   username: string;
@@ -8,83 +8,105 @@ type User = {
 };
 
 class UserDB {
-  pool;
-  query;
+  private db: DB;
 
-  constructor(db: DB) {
-    this.pool = db.getPool();
-    this.query = db.query;
+  constructor() {
+    this.db = DB.getInstance();
   }
 
-  async getUser(username: string) {
+  validateQueryResponse(res: QueryResult | DatabaseError) {
+    if (res instanceof DatabaseError) {
+      return {
+        message: res.detail,
+        code: 500,
+      };
+    }
+
+    if (!res.rowCount) {
+      return {
+        message: 'User does not exist',
+        code: 400,
+      };
+    }
+
+    return res.rows[0];
+  }
+
+  async getUser(username: string): Promise<User | DatabaseResponseError> {
     const sql = `select username, email, password from users where username = $1`;
-    const results = await this.query(sql, [username]);
-    return this.validateResults(results);
+    const response = await this.db.query(sql, [username]);
+    return this.validateQueryResponse(response);
   }
 
-  async createUser(username: string, hash: string, email: string) {
+  async createUser(
+    username: string,
+    password: string,
+    email: string
+  ): Promise<User | DatabaseResponseError> {
     const sql =
-      'insert into users (username, password, email) values ($1, $2, $3) returning username, password, email';
-    const results = await this.query(sql, [username, hash, email]);
-    return this.validateResults(results);
+      'insert into users (username, password, email) values ($1, $2, $3) returning username, email, password';
+    const results = await this.db.query(sql, [username, password, email]);
+    return this.validateQueryResponse(results);
   }
 
-  async updateUser(username: string, newHash?: string, newEmail?: string) {
-    //allow user to update either password, email or both
-    let sql = 'update users set ';
-    let updatedValues = '';
-    const params = [];
+  async updateUser(
+    username: string,
+    password?: string,
+    email?: string
+  ): Promise<User | DatabaseResponseError> {
+    const user = await this.getUser(username);
 
-    if (newHash) {
-      updatedValues += 'password = $1';
-      params.push(newHash);
+    if ('code' in user) {
+      return user;
     }
 
-    if (newEmail) {
-      if (params.length) {
-        updatedValues += ', ';
-      }
-      updatedValues += `email = $${params.length + 1}`;
-      params.push(newEmail);
-    }
+    const params = [username, password || user.password, email || user.email];
 
-    sql += `${updatedValues} where username = $${params.length + 1}`;
-    params.push(username);
+    const sql = `
+      UPDATE USER
+      SET password = $2, email = $3
+      WHERE username = $1
+    `;
 
-    const results = await this.query(sql, params);
-    return this.validateResults(results);
+    const response = await this.db.query(sql, params);
+    return this.validateQueryResponse(response);
   }
 
-  validateResults(results: QueryResult | { error: unknown }): {
-    message?: string;
-    error?: unknown;
-    username?: string;
-    email?: string;
-    password?: string;
-  } {
-    if ('error' in results) {
+  async deleteUser(username: string) {
+    const sqlDeleteProducts = 'DELETE FROM user_products WHERE username = $1;';
+    const sqlDeleteUser = 'DELETE FROM users WHERE username = $1;';
+
+    const response = await this.db.queries(
+      [sqlDeleteProducts, sqlDeleteUser],
+      [[username], [username]]
+    );
+
+    if (response instanceof DatabaseError) {
       return {
-        message: 'Database connection failed',
-        error: results.error,
+        message: response.detail,
+        code: 500,
       };
     }
 
-    if (results.rowCount === 0) {
+    if (response.rowCount === 1) {
       return {
-        message: 'Operation failed',
+        message: 'Successfully deleted user.',
+        code: 200,
+      };
+    } else if (response.rowCount === 0) {
+      return {
+        message: 'User does not exist.',
+        code: 400,
+      };
+    } else {
+      return {
+        message: 'Unknown error.',
+        code: 500,
       };
     }
-
-    const user: User = results.rows[0];
-
-    return {
-      username: user.username,
-      email: user.email,
-      password: user.password,
-    };
   }
 }
 
-const userDb = new UserDB(db);
+const userDb = new UserDB();
 
-export { userDb };
+export { User, UserDB, userDb };

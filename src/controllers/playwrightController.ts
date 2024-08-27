@@ -1,6 +1,6 @@
-import { playwrightConnection } from '@/utils/playwright';
-import { Request, Response, NextFunction } from 'express';
 import { ErrorObject } from '@/server';
+import { playwrightConnection } from '@/utils/playwright';
+import { NextFunction, Request, Response } from 'express';
 
 class PlaywrightController {
   async getScreenshot(req: Request, res: Response, next: NextFunction) {
@@ -13,7 +13,9 @@ class PlaywrightController {
       });
     }
 
+    console.log('Taking screenshot');
     const screenshotString = await playwrightConnection.getScreenshot(url);
+    console.log('Successfully taken screenshot');
     res.locals.screenshot = screenshotString;
     return next();
   }

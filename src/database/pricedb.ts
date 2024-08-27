@@ -5,16 +5,16 @@ export interface UpdateDetails {
 }
 
 import { QueryResult } from 'pg';
-import { db, DB } from './db';
+import { DB } from './db';
 
 class PriceDB {
   db: DB;
   pool;
   query;
 
-  constructor(db: DB) {
-    this.db = db;
-    this.pool = db.getPool();
+  constructor() {
+    this.db = DB.getInstance();
+    this.pool = this.db.getPool();
     this.query = db.query;
   }
 

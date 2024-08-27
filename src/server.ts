@@ -10,9 +10,9 @@ import refreshRouter from './routes/refreshRouter';
 import { playwrightConnection } from './utils/playwright';
 
 const app = express();
-const port = 3000;
+const port = 8084;
 
-app.use(cors({ origin: 'http://localhost:8084', credentials: true }));
+app.use(cors({ origin: '*', credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 
@@ -72,6 +72,7 @@ app.listen(port, '0.0.0.0', () => {
 function shutdown() {
   // db.closeConnection();
   playwrightConnection.closeBrowser();
+  console.log('Shutting down...');
 }
 
 process.on('SIGTERM', shutdown);

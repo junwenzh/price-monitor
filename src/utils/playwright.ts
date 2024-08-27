@@ -7,7 +7,13 @@ import stealth from 'puppeteer-extra-plugin-stealth';
 class PlaywrightConnection {
   private browser?: Browser;
   private context?: BrowserContext;
-  private pages: Record<string, Page> = {};
+  private pages: Record<string, { timestamp: number; page: Page }> = {};
+
+  constructor() {
+    setInterval(() => {
+      this.cleanUpStalePages();
+    }, 1000 * 60);
+  }
 
   async getBrowser(): Promise<Browser> {
     if (!this.browser) {
@@ -37,9 +43,12 @@ class PlaywrightConnection {
 
   async getPage(url: string): Promise<Page> {
     const context = await this.getContext();
+
     if (!(url in this.pages)) {
-      console.log('Loading new page');
+      console.log('Loading new page.');
+
       const page = await context.newPage();
+
       PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(blocker => {
         blocker.enableBlockingInPage(page);
       });
@@ -49,20 +58,28 @@ class PlaywrightConnection {
         await page.addScriptTag({
           url: 'https://cdnjs.cloudflare.com/ajax/libs/css-selector-generator/3.6.6/index.min.js',
         });
-        await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
-        await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
-        this.pages[url] = page;
+        // await page.waitForLoadState('networkidle'); // waits until 0.5 seconds of no network traffic
+        // await page.waitForLoadState('domcontentloaded'); // this doesn't work on its own
+        this.pages[url] = {
+          timestamp: Date.now(),
+          page: page,
+        };
+        console.log('Finished loading page');
       } catch (error) {
         console.error('Playwright failed to open URL', error);
-        //TODO: determine flow if Playwright encounters a connection error
       }
     }
-    return this.pages[url] || 'Connection error';
+
+    return this.pages[url].page;
   }
 
   async getScreenshot(url: string): Promise<string> {
     const page = await this.getPage(url);
-    const screenshotBuffer = await page.screenshot({ fullPage: false });
+    const screenshotBuffer = await page.screenshot({
+      fullPage: false,
+      type: 'jpeg',
+      quality: 40,
+    });
     const screenshotString = screenshotBuffer.toString('base64');
     return screenshotString;
   }
@@ -101,9 +118,23 @@ class PlaywrightConnection {
     return matches[0];
   }
 
-  async closeBrowser() {
+  closeBrowser() {
     if (this.browser) {
       this.browser.close();
+      console.log('Closed Playwright.');
+    }
+  }
+
+  async cleanUpStalePages() {
+    const now = Date.now();
+    const lifespan = 1000 * 60 * 10;
+
+    for (const url in this.pages) {
+      const page = this.pages[url];
+      if (now - page.timestamp > lifespan) {
+        await page.page.close();
+        delete this.pages[url];
+      }
     }
   }
 }
