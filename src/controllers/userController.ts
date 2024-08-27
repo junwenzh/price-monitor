@@ -17,9 +17,15 @@ type UserCredentials = {
   password?: string;
 };
 
+type User = {
+  username?: string;
+  email?: string;
+  password?: string;
+};
+
 const userController = {
   async createUser(req: Request, res: Response, next: NextFunction) {
-    const { username, email, password }: UserCredentials = req.body;
+    const { username, email, password }: User = req.body;
 
     if (!username || !email || !password) {
       return next({
@@ -34,11 +40,11 @@ const userController = {
     // error handling is built into the method
     const result = await userDb.createUser(username, hashedPassword, email);
 
-    if (result.error) {
+    if ('code' in result) {
       return next({
-        log: `From userController.createUser. ${result.error}`,
+        log: `From userController.createUser. ${result.message}`,
         status: 500,
-        message: 'Server error',
+        message: result.message,
       });
     }
 
@@ -47,14 +53,51 @@ const userController = {
     return next();
   },
 
-  async updateUserInfo(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { username } = req.params;
-      const { newPassword, newEmail } = req.body;
-      const result = await userDb.updateUser(username, newPassword, newEmail);
-      res.json(result);
-    } catch (error) {
-      next(error);
+  async updateUser(req: Request, res: Response, next: NextFunction) {
+    const { username, password, email }: User = req.body;
+
+    if (!username) {
+      return next({
+        log: 'From userController.updateUser. Missing username',
+        status: 400,
+        message: 'Username not provided.',
+      });
+    }
+
+    const result = await userDb.updateUser(username, password, email);
+
+    if ('code' in result) {
+      return next({
+        log: `From userController.updateUser. ${result.message}`,
+        status: 500,
+        message: result.message,
+      });
+    }
+
+    return next();
+  },
+
+  async deleteUser(req: Request, res: Response, next: NextFunction) {
+    const username = req.params.username;
+
+    if (!username) {
+      return next({
+        log: 'From userController.delete. Missing username',
+        status: 400,
+        message: 'Username not provided.',
+      });
+    }
+
+    const result = await userDb.deleteUser(username);
+
+    if (result.code === 200) {
+      return next();
+    } else {
+      return next({
+        log: `From userController.delete. ${result.message}`,
+        status: 500,
+        message: result.message,
+      });
     }
   },
 
@@ -69,25 +112,17 @@ const userController = {
       });
     }
 
-    const user = await userDb.getUser(username);
+    const result = await userDb.getUser(username);
 
-    if (user.error) {
+    if ('code' in result) {
       return next({
-        log: `From userController.authenticateUser. ${user.error}`,
+        log: `From userController.authenticateUser. ${result.message}`,
         status: 500,
-        message: 'Error authenticating user',
+        message: result.message,
       });
     }
 
-    if (!user.username) {
-      return next({
-        log: 'From userController.authenticateUser. Username not found in the database',
-        status: 400,
-        message: 'User does not exist',
-      });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password!);
+    const isPasswordValid = await bcrypt.compare(password, result.password);
 
     if (!isPasswordValid) {
       return next({
@@ -97,7 +132,7 @@ const userController = {
       });
     }
 
-    req.body.username = user.username;
+    req.body.username = result.username;
     res.cookie('username', username);
 
     return next();
@@ -159,55 +194,8 @@ const userController = {
         status: 403,
         message: 'Authentication failed: Invalid token',
       });
-      return next({
-        log: 'From userController.authenticateJWT. Invalid token',
-        status: 403,
-        message: 'Authentication failed: Invalid token',
-      });
     }
   },
 };
 
 export { userController };
-
-// async authenticateUser(req: Request, res: Response, next: NextFunction) {
-//   const { username, password }: UserCredentials = req.body;
-
-//   if (!username || !password) {
-//     return next({
-//       log: 'From userController.authenticateUser. Missing username or password',
-//       status: '400',
-//       message: 'Username or password not provided',
-//     });
-//   }
-
-//   const user = await userDb.getUser(username);
-
-//   if (user.error) {
-//     return next({
-//       log: `From userController.authenticateUser. ${user.error}`,
-//       status: 500,
-//       message: 'Error authenticating user',
-//     });
-//   }
-
-//   if (!user.username) {
-//     return next({
-//       log: 'From userController.authenticateUser. Username not found in the database',
-//       status: 400,
-//       message: 'User does not exist',
-//     });
-//   }
-
-//   const isPasswordValid = await bcrypt.compare(password, user.password!);
-
-//   if (!isPasswordValid) {
-//     return next({
-//       log: 'From userController.authenticateUser. Invalid password',
-//       status: 400,
-//       message: 'Incorrect password provided',
-//     });
-//   }
-
-//   return next();
-// },

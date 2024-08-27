@@ -1,62 +1,105 @@
-import { NextFunction, Request, Response } from 'express';
-//import { url } from 'inspector';
 import { UpdateDetails, priceDb } from '@/database/pricedb';
-//import { UpdateQueryParams } from '@/utils/sqlHelpers';
+import { NextFunction, Request, Response } from 'express';
 
 const priceController = {
-  // //extract base url from url and selector
+  // extract base url from url and selector
   async saveBaseUrl(req: Request, res: Response, next: NextFunction) {
     const url = req.body.url as string;
     const selector = req.body.selector as string;
     const regex = /^(https?:\/\/[^/]+)/;
     const matchedUrl: RegExpMatchArray | null = url.match(regex);
-    if (matchedUrl) {
-      const baseUrl = matchedUrl[0];
-      try {
-        // TODO: Handle duplicate base URLs. Use an update instead of create?
-        await priceDb.createBaseUrl(baseUrl, selector);
-        return next();
-      } catch (error) {
-        console.error('Error saving to the database:', error);
-        next(error);
+
+    if (!matchedUrl) {
+      return next({
+        log: 'From priceController.saveBaseUrl. Cannot parse the base URL',
+        status: 500,
+        message: 'Cannot parse the base URL',
+      });
+    }
+
+    const baseUrl = matchedUrl[0];
+
+    const hasBaseUrl = await priceDb.hasBaseUrl(baseUrl);
+
+    if ('code' in hasBaseUrl) {
+      return next({
+        log: 'From priceController.saveBaseUrl. Error querying the database.',
+        status: 500,
+        message: 'Error querying the database.',
+      });
+    }
+
+    if (hasBaseUrl.length) {
+      const updateBaseUrlRes = await priceDb.updateBaseUrl(baseUrl, selector);
+      if ('code' in updateBaseUrlRes) {
+        return next({
+          log: 'From priceController.saveBaseUrl. Error updating the base URL in the database.',
+          status: 500,
+          message: 'Error updating the base URL in the database.',
+        });
       }
     } else {
-      console.log('No base URL found');
-      const error = new Error('No base URL');
-      next(error);
-    }
-  },
-  async newTrackedItem(req: Request, res: Response, next: NextFunction) {
-    try {
-      // const url = res.locals.url as string;
-      // const selector = res.locals.selector as string;
-      const { url, selector, username, user_note, price, target_price } =
-        req.body;
+      const saveBaseUrlRes = await priceDb.createBaseUrl(baseUrl, selector);
 
-      const result = await priceDb.newTrackedItem(
-        url,
-        selector,
-        username,
-        user_note,
-        price,
-        target_price
-      );
-      res.json(result);
-    } catch (error) {
-      next(error);
+      if ('code' in saveBaseUrlRes) {
+        return next({
+          log: 'From priceController.saveBaseUrl. Error saving the base URL to the database.',
+          status: 500,
+          message: 'Error saving the base URL to the database.',
+        });
+      }
     }
+
+    return next();
+  },
+
+  async newTrackedItem(req: Request, res: Response, next: NextFunction) {
+    const { url, selector, username, user_note, price, target_price } =
+      req.body;
+
+    if (!url || !selector || !username || !price || !target_price) {
+      return next({
+        log: 'From priceController.newTrackedItem. Missing required fields.',
+        status: 500,
+        message: 'Missing required fields.',
+      });
+    }
+
+    const response = await priceDb.newTrackedItem(
+      url,
+      selector,
+      username,
+      user_note || '',
+      price,
+      target_price
+    );
+
+    if ('code' in response) {
+      return next({
+        log: 'From priceController.newTrackedItem. Error saving new tracked item to the database.',
+        status: 500,
+        message: 'Error saving new tracked item to the database.',
+      });
+    }
+
+    return next();
   },
 
   async getProducts(req: Request, res: Response, next: NextFunction) {
     const { username } = req.params;
-    const result = await priceDb.getProducts(username);
-    if (!result.length) {
-      return next();
+    const response = await priceDb.getProducts(username);
+
+    if ('code' in response) {
+      return next({
+        log: 'From priceController.getProducts. Error retrieving products from the database.',
+        status: 500,
+        message: 'Error retrieving products from the database.',
+      });
     }
 
-    console.log(result);
-    res.locals.data = result;
-    next();
+    res.locals.data = response;
+
+    return next();
   },
   // //selector price and timestamp
   // async savePrice(req: Request, res: Response, next: NextFunction) {
@@ -65,7 +108,7 @@ const priceController = {
   //   const timestamp = Date.now();
   //   //update table with price, url and timestamp
   // },
-  async updateProducts(req: Request, res: Response) {
+  async updateProducts(req: Request, res: Response, next: NextFunction) {
     const { username, url, user_note, target_price, notify } = req.body;
     const updates: UpdateDetails[] = [];
 
@@ -93,13 +136,19 @@ const priceController = {
     //   whereClause: ['username = $1', 'url = $2'],
     // };
 
-    try {
-      const result = await priceDb.updateProductInfo(username, url, updates);
-      res.json(result);
-    } catch (error) {
-      console.error('Failed to update product info:', error);
-      res.status(500).json({ error: 'Failed to update product information' });
+    const response = await priceDb.updateProductInfo(username, url, updates);
+
+    if ('code' in response) {
+      return next({
+        log: 'From priceController.updateProducts. Error updating the database.',
+        status: 500,
+        message: 'Error updating the database.',
+      });
     }
+
+    res.locals.data = response;
+
+    return next();
   },
 
   //   async deleteProducts(req: Request, res: Response) {

@@ -17,8 +17,6 @@ router.post(
   }
 );
 
-router.put('/users/:username', userController.updateUserInfo);
-
 router.post(
   '/login',
   userController.authenticateUser,
