@@ -118,7 +118,7 @@ const refreshController = {
             item: '',
             url: url.url,
             targetPrice: user.target_price,
-            oldPrice: 0,
+            oldPrice: 0, // need to update to the old price
             currentPrice: url.latest_price || 0,
             unsubscribeUrl: '',
           });

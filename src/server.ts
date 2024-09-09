@@ -66,7 +66,13 @@ app.use(
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`App listening at http://localhost:${port}`);
-  //testUserDb();
+
+  setInterval(
+    () => {
+      fetch('http://localhost:8084/api/refresh');
+    },
+    1000 * 60 * 60 * 24
+  );
 });
 
 function shutdown() {
