@@ -141,24 +141,31 @@ class PriceDB {
   //method to get all user products for a single user
 
   async getProducts(username: string) {
+    // used for the user products table
+    // url, note, target price, current price, notify
+
     const sql = `
       SELECT 
-        up.username,
-        up.url,
-        up.user_note,
-        up.target_price,
-        u.selector,
-        ph.price,
-        ph.price_timestamp 
-      FROM
-        user_products up
-      JOIN 
-        urls u 
-        ON up.url = u.url 
-      JOIN 
-        pricehistory ph
-        ON u.url = ph.url
-      WHERE up.username = $1;`;
+        *
+      FROM (
+        SELECT
+          up.url,
+          up.user_note,
+          up.target_price,
+          ph.price,
+          ph.price_timestamp,
+          up.notify,
+          ROW_NUMBER() OVER(PARTITION BY up.url ORDER BY ph.price_timestamp ASC) as rn
+        FROM
+          user_products up
+        JOIN
+          pricehistory ph
+          ON  up.url = ph.url
+        WHERE
+          up.username = $1
+      ) a
+      WHERE rn = 1;
+    `;
 
     const response = await this.db.query(sql, [username]);
     return this.validateQueryResponse(response);

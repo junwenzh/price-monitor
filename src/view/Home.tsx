@@ -1,4 +1,6 @@
 import React from 'react';
+import DemoPage from './components/user-products/UserProductsTable';
+
 // https://excalidraw.com/#room=1feb0e0fcac33587a9b3,IPa1Ulyx172IrKC70cQfcA
 export default function Home() {
   const handleButton = () => {
@@ -22,6 +24,7 @@ export default function Home() {
 
   return (
     <div>
+      <DemoPage />
       <button onClick={handleButton}>Click</button>
       <button onClick={handleRefreshButton}>Refresh</button>
     </div>
