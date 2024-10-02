@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
+import React from 'react';
 import { Checkbox } from '../ui/checkbox';
-import { CheckedState } from '@radix-ui/react-checkbox';
+
 // URL | Target Price | Current Price | Notes | Notification Checkbox | Deletion Checkbox
 
 export type TrackedProduct = {
@@ -10,30 +10,11 @@ export type TrackedProduct = {
   current_price: number;
   notes: string;
   notify: boolean;
+  toggleNotify: (index: number) => void;
   delete: () => void;
 };
 
-export const columns = (updateNotify: (url: string, checked: boolean) => void): ColumnDef<TrackedProduct>[] = [
-  // {
-  //   id: 'notify',
-  //   cell: ({ row }) => {
-  //     const trackedProduct = row.original;
-
-  //     // const handleOnCheckedChange = (checkedState: CheckedState) => {
-  //     //   console.log(checkedState);
-  //     //   setChecked(!checked);
-  //     // };
-
-  //     return (
-  //       <Checkbox
-  //       checked={trackedProduct.notify}
-  //       onCheckedChange={(checked) => }
-  //         // checked={checked}
-  //         // onCheckedChange={handleOnCheckedChange}
-  //       ></Checkbox>
-  //     );
-  //   },
-  // },
+export const columns: ColumnDef<TrackedProduct>[] = [
   {
     accessorKey: 'url',
     header: 'URL',
@@ -53,6 +34,12 @@ export const columns = (updateNotify: (url: string, checked: boolean) => void): 
   {
     accessorKey: 'notify',
     header: 'Notify',
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.original.notify}
+        onChange={() => row.original.toggleNotify(row.index)}
+      />
+    ),
   },
   {
     accessorKey: 'delete',

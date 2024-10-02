@@ -69,9 +69,12 @@ app.listen(port, '0.0.0.0', () => {
 
   setInterval(
     () => {
-      fetch('http://localhost:8084/api/refresh');
+      console.log('Initiating refresh');
+      fetch('http://localhost:8084/api/refresh').then(() =>
+        console.log('Completed refresh')
+      );
     },
-    1000 * 60 * 60 * 24
+    1000 * 60 * 60 * 8
   );
 });
 

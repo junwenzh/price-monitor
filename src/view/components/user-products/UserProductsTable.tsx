@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { TrackedProduct, columns } from './columns';
 import { DataTable } from '../ui/datatable';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import { TrackedProduct, columns } from './columns';
 //import { Product } from '../TrackingHistory';
 
 // Product is a single product from database query
@@ -16,18 +14,20 @@ export interface Product {
 }
 
 export default function DemoPage() {
-  // const username = useSelector((state: RootState) => state.isLoggedIn.username);
   const username = 'jun';
-  //console.log(username);
+
+  // this contains the data for the table
   const [products, setProducts] = useState<TrackedProduct[]>([]);
   const [error, setError] = useState<string>('');
 
-  // price, target_price, user_note, url
+  const toggleNotify = (rowIndex: number) => {
+    const updatedData = products.map((row, index) =>
+      index === rowIndex ? { ...row, notify: !row.notify } : row
+    );
+    setProducts(updatedData);
+  };
 
-  // on component load, we fetch all the user products from the database
-  // pass this data to the datatable
-  // goal: make notify updatable
-
+  // initialize the data on component load
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -36,27 +36,18 @@ export default function DemoPage() {
         const data = await response.json();
         console.log(data);
         const products = data.data as Product[];
-        const temp: TrackedProduct[] = products.map(
-          (index, product: Product) => {
-            return {
-              url: product.url,
-              target_price: product.target_price,
-              current_price: product.price,
-              notes: product.user_note,
-              notify: product.notify,
-              delete: () => {},
-            };
-          }
-        );
+        const temp: TrackedProduct[] = products.map((product: Product) => {
+          return {
+            url: product.url,
+            target_price: product.target_price,
+            current_price: product.price,
+            notes: product.user_note,
+            notify: product.notify,
+            toggleNotify: toggleNotify,
+            delete: () => {},
+          };
+        });
         setProducts(temp);
-        // const product: TrackedProduct = {
-        //   url: data.url,
-        //   target_price: data.target_price,
-        //   current_price: data.price,
-        //   notes: data.user_note,
-        //   notify: false,
-        //   delete: () => {},
-        // };
       } catch (error) {
         setError('Failed to fetch data');
         console.error(error);
@@ -65,11 +56,6 @@ export default function DemoPage() {
 
     fetchProducts();
   }, []);
-
-  const updateNotify = () => {
-    //locally update notify state
-    //send to backend
-  };
 
   return (
     <div className="container mx-auto py-10">
