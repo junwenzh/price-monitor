@@ -3,32 +3,7 @@ import DemoPage from './components/user-products/UserProductsTable';
 
 // https://excalidraw.com/#room=1feb0e0fcac33587a9b3,IPa1Ulyx172IrKC70cQfcA
 export default function Home() {
-  const handleButton = () => {
-    fetch('/api/scrape/getprice', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: 'https://www.fragrancenet.com/perfume/dolce-and-gabbana/d-and-g-light-blue/edt#118661',
-        selector: '#pwcprice',
-      }),
-    })
-      .then(res => res.json())
-      .then(data => console.log(data));
-  };
-
-  const handleRefreshButton = () => {
-    fetch('/api/refresh');
-  };
-
-  return (
-    <div>
-      <DemoPage />
-      <button onClick={handleButton}>Click</button>
-      <button onClick={handleRefreshButton}>Refresh</button>
-    </div>
-  );
+  return <DemoPage />;
 }
 
 // import React, { useEffect, useState } from 'react';

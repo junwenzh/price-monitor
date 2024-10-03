@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import Cookies from 'js-cookie';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
@@ -17,13 +16,16 @@ import {
   FormMessage,
 } from './ui/form';
 import { Input } from './ui/input';
-
+type ResponseError = {
+  message: string;
+};
 const formSchema = z.object({
   username: z.string().min(3).max(20),
+  email: z.string().min(5),
   password: z.string().min(4).max(20),
 });
 
-export function LoginForm() {
+export default function SignUpForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -35,49 +37,35 @@ export function LoginForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { username, password } = values;
+  async function handleSubmit(values: z.infer<typeof formSchema>) {
+    const { username, email, password } = values;
 
     try {
-      const response = await fetch('/api/users/login', {
+      const response = await fetch(`/api/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, email, password }),
       });
 
+      console.log(response);
+
       if (response.ok) {
-        // const data = await response.json();
-        const username = Cookies.get('username');
-        const token = Cookies.get('token');
-        localStorage.setItem(
-          'token',
-          JSON.stringify({
-            value: token,
-            expiry: new Date().getTime() + 3600,
-          })
-        );
-        localStorage.setItem(
-          'userDetails',
-          JSON.stringify({
-            username: username,
-            //            email: data.email,
-          })
-        );
-        dispatch(logIn({ username: username }));
+        dispatch(logIn({ username }));
         navigate('/');
       } else {
-        console.error('Login failed');
+        const error: ResponseError = await response.json();
+        console.error(error.message);
       }
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error('Error during registration:', error);
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="username"
@@ -85,6 +73,21 @@ export function LoginForm() {
             <FormItem className="grid grid-cols-4 gap-4 space-y-0">
               <FormLabel className="col-span-1 text-right pr-4 mt-2">
                 Username
+              </FormLabel>
+              <FormControl className="col-span-3">
+                <Input {...field} className="w-60" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem className="grid grid-cols-4 gap-4 space-y-0">
+              <FormLabel className="col-span-1 text-right pr-4 mt-2">
+                Email
               </FormLabel>
               <FormControl className="col-span-3">
                 <Input {...field} className="w-60" />
@@ -110,7 +113,7 @@ export function LoginForm() {
         />
         <div className="flex justify-center">
           <Button type="submit" className="w-full my-8">
-            Sign In
+            Sign Up
           </Button>
         </div>
       </form>

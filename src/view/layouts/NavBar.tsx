@@ -5,6 +5,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { logOut } from '../slices/loggedInSlice';
 import { RootState } from '../store';
 
+import { Button } from '../components/ui/button';
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuList,
+} from '../components/ui/navigation-menu';
+
 export default function NavBar() {
   const isLoggedIn = useSelector(
     (state: RootState) => state.isLoggedIn.isLoggedIn
@@ -21,29 +28,60 @@ export default function NavBar() {
     dispatch(logOut());
   };
 
-  // const handleLogIn = () => {
-  //   dispatch(logIn({ username: 'hi', email: 'email' }));
-  // };
-
-  const LoggedInUI = () => (
-    <div>
-      <p>Welcome, {loggedInUser}!</p>
-      <Link to="/trackinghistory">Price Tracking History</Link>
-      <Link to="/newproduct">New Product Price Tracker</Link>
-      <button onClick={handleLogOut}>Log Out</button>
-    </div>
-  );
-  const LoggedOutUI = () => (
-    <div>
-      <Link to="/register">Register</Link>
-      <Link to="/login">Login</Link>
-      {/* <button onClick={handleLogIn}>Login</button> */}
-    </div>
-  );
-
   return (
-    <div>
-      <nav className="flex">{isLoggedIn ? LoggedInUI() : LoggedOutUI()}</nav>
-    </div>
+    <header className="fixed top-0 w-full py-4 z-50">
+      <nav className="container w-full grid grid-cols-3 items-center gap-4 px-4 ">
+        <div className="flex justify-start w-full">
+          <a href="/">LOGO</a>
+        </div>
+
+        <div className="flex justify-center">
+          <NavigationMenu>
+            <NavigationMenuList className="flex">
+              <NavigationMenuItem>
+                <Button variant="outline" className="w-40">
+                  <Link to="/trackinghistory">Your Products</Link>
+                </Button>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Button variant="outline" className="w-40">
+                  <Link to="/newproduct">Track New Product</Link>
+                </Button>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+
+        <div className="flex justify-end">
+          {isLoggedIn ? (
+            <NavigationMenu>
+              <NavigationMenuList className="flex">
+                <NavigationMenuItem>Welcome {loggedInUser}</NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Button variant="outline" onClick={handleLogOut}>
+                    Log Out
+                  </Button>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          ) : (
+            <NavigationMenu>
+              <NavigationMenuList className="flex">
+                <NavigationMenuItem>
+                  <Button variant="outline" className="w-32">
+                    <Link to="/register">Sign Up</Link>
+                  </Button>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Button variant="outline" className="w-32">
+                    <Link to="login">Sign In</Link>
+                  </Button>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          )}
+        </div>
+      </nav>
+    </header>
   );
 }

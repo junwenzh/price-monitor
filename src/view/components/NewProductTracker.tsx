@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 // import { useDispatch, useSelector } from 'react-redux';
 // import {
 //   setUrl,
@@ -196,25 +198,22 @@ export default function NewProductTracker() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="text-3xl my-4">Price Monitor</div>
-      <form
-        className="flex flex-col items-center gap-4 w-full"
-        onSubmit={handleUrlSubmit}
-      >
-        <input
+      <div className="text-2xl my-4">Link to the product page</div>
+      <form className="flex flex-col md:flex-row" onSubmit={handleUrlSubmit}>
+        <Input
           type="text"
           id="inputUrl"
           name="inputUrl"
           value={url}
           onChange={handleUrlChange}
-          className="ring-2 ring-slate-200 rounded p-2 w-full max-w-2xl text-center"
+          className="ring-2 ring-slate-200 rounded p-2 max-w-2xl text-center w-screen md:w-[768px] mx-4"
         />
-        <button
+        <Button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded transition duration-150 ease-in-out active:bg-blue-600 active:scale-95"
+          className="bg-blue-500 text-white px-4 py-2 rounded transition duration-150 ease-in-out active:bg-blue-600 active:scale-95 mx-4"
         >
-          Submit
-        </button>
+          Search
+        </Button>
       </form>
       <form
         className="flex flex-col items-center gap-4 w-full"
