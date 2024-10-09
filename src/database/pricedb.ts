@@ -231,6 +231,13 @@ class PriceDB {
 
     return this.validateQueryResponse(response);
   }
+
+  async validateUserHasUrl(username: string, url: string) {
+    const sql = `SELECT COUNT(*) FROM user_products WHERE username = $1 and url = $2`;
+    const response = await this.db.query(sql, [username, url]);
+
+    return this.validateQueryResponse(response);
+  }
 }
 
 const priceDb = new PriceDB();

@@ -151,6 +151,58 @@ const priceController = {
     return next();
   },
 
+  async deleteTrackedProduct(req: Request, res: Response) {
+    const { username, url } = req.body;
+
+    console.log(req.body);
+
+    if (typeof username !== 'string' && typeof url !== 'string') {
+      res.status(400).json({
+        message: 'Please provide a username and url',
+        error: 'Missing required data',
+      });
+      return;
+    }
+
+    // validate that the url exists under the user
+    const userHasUrl = await priceDb.validateUserHasUrl(username, url);
+
+    if ('code' in userHasUrl) {
+      console.error(userHasUrl.message);
+      res.status(500).json({
+        message: 'Error querying the database',
+        error: userHasUrl.message,
+      });
+      return;
+    }
+
+    if (Array.isArray(userHasUrl) && userHasUrl[0].count < 1) {
+      res.status(400).json({
+        message: 'The user does not have this user',
+        error: 'Invalid url',
+      });
+      return;
+    }
+
+    const deleteProductResponse = await priceDb.deleteTrackedItem(
+      username,
+      url
+    );
+
+    if ('code' in deleteProductResponse) {
+      console.error(deleteProductResponse);
+      res.status(500).json({
+        message: 'Error deleting the url from the database',
+        error: deleteProductResponse.message,
+      });
+      return;
+    }
+
+    res.json({
+      message: 'Successfully deleted product from user',
+    });
+  },
+
   //   async deleteProducts(req: Request, res: Response) {
   //     const { username, url } =
   //   }

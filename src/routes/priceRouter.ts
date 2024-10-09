@@ -26,4 +26,8 @@ router.post(
     res.json({ message: 'sent successfully' });
   }
 );
+
+// delete a product tracked by a user
+router.delete('/product', priceController.deleteTrackedProduct);
+
 export default router;
