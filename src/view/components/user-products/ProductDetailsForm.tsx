@@ -4,6 +4,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 import { z } from 'zod';
 import { logIn } from '../../slices/loggedInSlice';
 import { Button } from '../ui/button';
@@ -18,9 +20,10 @@ import {
 } from '../ui/form';
 import { Input } from '../ui/input';
 import { Checkbox } from '../ui/checkbox';
+import { useToast } from '../ui/use-toast';
 
 const formSchema = z.object({
-  targetPrice: z.number(),
+  targetPrice: z.string(),
   notes: z.string().max(1000),
   notify: z.boolean(),
 });
@@ -42,18 +45,44 @@ export function ProductDetailsForm({
 }: ProductDetailsFormProps) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const username = useSelector((state: RootState) => state.isLoggedIn.username);
+  console.log(username, `username`);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      targetPrice: targetPrice,
+      targetPrice: `${targetPrice}`,
       notes: notes,
       notify: notify,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    try {
+      const response = await fetch('/api/price/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          url,
+          user_note: values.notes,
+          target_price: values.targetPrice,
+          notify: values.notify,
+        }),
+      });
+
+      if (response.ok) {
+        // show a toast
+        toast({
+          title: 'Successfully updated',
+        });
+      }
+    } catch (error) {
+      console.error('Error updating the price', error);
+    }
     // const { username, password } = values;
 
     // try {
@@ -92,17 +121,26 @@ export function ProductDetailsForm({
     //   console.error('Error during login:', error);
     // }
   }
-  //   const handleDelete = async (url: string) => {
-  //     try {
-  //       const response = await fetch(`api/${username}/${url}/delete`, {
-  //         method: 'POST',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify({ url }),
-  //       });
-  //     } catch (error) {
-  //       console.error('Error deleting tracked product', error);
-  //     }
-  //   };
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`/api/price/product`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, url }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Successfully deleted',
+        });
+        navigate('/trackinghistory');
+      } else {
+        throw new Error('Error deleting. Response was not ok');
+      }
+    } catch (error) {
+      console.error('Error deleting tracked product', error);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -159,7 +197,9 @@ export function ProductDetailsForm({
           <Button type="submit" className="w-full my-8">
             Save
           </Button>
-          <Button className="w-full my-8">Delete</Button>
+          <Button className="w-full my-8" onClick={handleDelete}>
+            Delete
+          </Button>
         </div>
       </form>
     </Form>

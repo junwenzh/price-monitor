@@ -111,6 +111,7 @@ const priceController = {
   async updateProducts(req: Request, res: Response, next: NextFunction) {
     const { username, url, user_note, target_price, notify } = req.body;
     const updates: UpdateDetails[] = [];
+    console.log(req.body);
 
     if (user_note !== undefined) {
       updates.push({ field: 'user_note', value: user_note });

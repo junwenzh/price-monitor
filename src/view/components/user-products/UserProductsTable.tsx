@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react';
 //   getCoreRowModel,
 //   ColumnDef,
 // } from '@tanstack/react-table';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { RootState } from '../store';
 import { TrackedProduct, columns } from './columns';
 import { DataTable } from '../ui/datatable';
 //import { Product } from '../TrackingHistory';
@@ -19,8 +22,8 @@ export interface Product {
 }
 
 export default function DemoPage() {
-  const username = 'jun';
-
+  const username = useSelector((state: RootState) => state.isLoggedIn.username);
+  console.log(username);
   // this contains the data for the table
   const [products, setProducts] = useState<TrackedProduct[]>([]);
   const [error, setError] = useState<string>('');

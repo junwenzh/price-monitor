@@ -8,7 +8,7 @@ import {
 } from 'react-router-dom';
 import NewProductTracker from './components/NewProductTracker';
 import Register from './components/Register';
-// import TrackingHistory from './components/TrackingHistory';
+import TrackingHistory from './components/TrackingHistory';
 import Login from './components/UserLogin';
 
 import Home from './Home';
@@ -22,7 +22,7 @@ const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="newproduct" element={<NewProductTracker />} />
-      {/* <Route path="trackinghistory" element={<TrackingHistory />} /> */}
+      <Route path="trackinghistory" element={<TrackingHistory />} />
       <Route path="productdetails" element={<ProductDetails />} />
     </Route>
   )

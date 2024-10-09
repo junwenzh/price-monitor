@@ -1,3 +1,12 @@
+import React from 'react';
+
+import DemoPage from './user-products/UserProductsTable';
+
+// https://excalidraw.com/#room=1feb0e0fcac33587a9b3,IPa1Ulyx172IrKC70cQfcA
+export default function TrackingHistory() {
+  return <DemoPage />;
+}
+
 // import React, { useEffect, useState } from 'react';
 // import { useSelector } from 'react-redux';
 // // import { useNavigate } from 'react-router-dom';
