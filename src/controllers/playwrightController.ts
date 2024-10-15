@@ -88,6 +88,14 @@ class PlaywrightController {
     res.locals.price = price;
     return next();
   }
+
+  async getTitle(req: Request, res: Response, next: NextFunction) {
+    const url = req.body.url;
+    const title = await playwrightConnection.getTitle(url);
+    res.locals.title = title;
+    next();
+    return;
+  }
 }
 
 export default new PlaywrightController();

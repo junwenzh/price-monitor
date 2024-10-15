@@ -123,6 +123,9 @@ class PriceDB {
 
     values.push(username, url); // Add username and url to the end of the values array
 
+    console.log(sql);
+    console.log(values);
+
     const response = await this.db.query(sql, values);
     return this.validateQueryResponse(response);
   }
@@ -150,12 +153,13 @@ class PriceDB {
       FROM (
         SELECT
           up.url,
+          up.title,
           up.user_note,
           up.target_price,
           ph.price,
           ph.price_timestamp,
           up.notify,
-          ROW_NUMBER() OVER(PARTITION BY up.url ORDER BY ph.price_timestamp ASC) as rn
+          ROW_NUMBER() OVER(PARTITION BY up.url ORDER BY ph.price_timestamp DESC) as rn
         FROM
           user_products up
         JOIN
@@ -197,6 +201,7 @@ class PriceDB {
   }
 
   async newTrackedItem(
+    title: string,
     url: string,
     selector: string,
     username: string,
@@ -213,11 +218,13 @@ class PriceDB {
     const sqlInsertPriceHistory =
       'INSERT INTO pricehistory (url, price) VALUES ($1, $2)';
     const sqlInsertUserProducts = `
-      INSERT INTO user_products (url, username, user_note, target_price)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO user_products (title, url, username, user_note, target_price)
+      VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT (url, username)
       DO UPDATE
-      SET user_note = EXCLUDED.user_note
+      SET user_note = EXCLUDED.user_note,
+          title = EXCLUDED.title,
+          target_price = EXCLUDED.target_price
       RETURNING username, url;`;
 
     const response = await this.db.queries(
@@ -225,7 +232,7 @@ class PriceDB {
       [
         [url, selector],
         [url, price],
-        [url, username, user_note, target_price],
+        [title, url, username, user_note, target_price],
       ]
     );
 

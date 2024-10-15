@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 // URL | Target Price | Current Price | Notes | Notification Checkbox | Deletion Checkbox
 
 export type TrackedProduct = {
+  title: string;
   url: string;
   target_price: number;
   current_price: number;
@@ -25,8 +26,8 @@ export type TrackedProduct = {
 
 export const columns: ColumnDef<TrackedProduct>[] = [
   {
-    accessorKey: 'url',
-    header: 'URL',
+    accessorKey: 'title',
+    header: 'Item Name',
   },
   {
     accessorKey: 'target_price',

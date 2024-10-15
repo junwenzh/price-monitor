@@ -16,8 +16,14 @@ router.post(
 router.post(
   '/coordinates',
   playwrightController.getElementAtCoordinates,
+  // get title
+  playwrightController.getTitle,
   (req: Request, res: Response) => {
-    return res.json({ price: res.locals.price, selector: res.locals.selector });
+    return res.json({
+      title: res.locals.title,
+      price: res.locals.price,
+      selector: res.locals.selector,
+    });
   }
 );
 

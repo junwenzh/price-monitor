@@ -66,7 +66,7 @@ export function LoginForm() {
           })
         );
         dispatch(logIn({ username: username }));
-        navigate('/');
+        navigate('/trackinghistory');
       } else {
         console.error('Login failed');
       }

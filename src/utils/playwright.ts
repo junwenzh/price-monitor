@@ -118,6 +118,12 @@ class PlaywrightConnection {
     return matches[0];
   }
 
+  async getTitle(url: string) {
+    const page = await this.getPage(url);
+    const title = await page.title();
+    return title;
+  }
+
   closeBrowser() {
     if (this.browser) {
       this.browser.close();

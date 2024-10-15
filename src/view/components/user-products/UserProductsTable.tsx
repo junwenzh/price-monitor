@@ -13,6 +13,7 @@ import { DataTable } from '../ui/datatable';
 
 // Product is a single product from database query
 export interface Product {
+  title: string;
   url: string;
   user_note: string;
   target_price: number;
@@ -110,19 +111,13 @@ export default function DemoPage() {
 
         const temp: TrackedProduct[] = products.map((product: Product) => {
           return {
+            title: product.title,
             url: product.url,
             target_price: product.target_price,
             current_price: product.price,
             notes: product.user_note,
             notify: product.notify,
             // deleteFlag: false,
-            // isEditingPrice: false,
-            // // toggleNotify: toggleNotify,
-            // // confirmNotifyChange: confirmNotifyChange,
-            // // toggleDeleteFlag: toggleDeleteFlag,
-            // delete: () => handleDelete(product.url),
-            // toggleEditPrice: toggleEditPrice,
-            // updateTargetPrice: updateTargetPrice,
           };
         });
 

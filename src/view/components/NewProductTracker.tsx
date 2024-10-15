@@ -43,6 +43,7 @@ export default function NewProductTracker() {
   const [target_price, setTargetPrice] = useState('');
   const [user_note, setUserNote] = useState('');
   const [showPostSubmitOptions, setShowPostSubmitOptions] = useState(false);
+  const [title, setTitle] = useState('');
   // const [rect, setRect] = useState({ x: 0, y: 0 });
   // const imageRef = useRef<HTMLImageElement>(null);
 
@@ -111,9 +112,11 @@ export default function NewProductTracker() {
         console.log(data);
         const priceString = data.price;
         const pricefigure = Number(priceString.replace(/[$,]+/g, ''));
+        const title = data.title;
         setPrice(pricefigure);
         setSelector(data.selector);
         setShowConfirmation(true);
+        setTitle(title);
       })
       .catch(error => {
         console.error('Fetch error:', error);
@@ -172,6 +175,7 @@ export default function NewProductTracker() {
     event.preventDefault();
     // Collect all data and send to the server
     const newTrackedProduct = {
+      title,
       username,
       url,
       selector,
@@ -243,6 +247,13 @@ export default function NewProductTracker() {
             placeholder="Enter target price"
             value={target_price}
             onChange={e => setTargetPrice(e.target.value)}
+            className="ring-2 ring-slate-200 rounded p-2"
+          />
+          <input
+            type="text"
+            placeholder="Title"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
             className="ring-2 ring-slate-200 rounded p-2"
           />
           <textarea

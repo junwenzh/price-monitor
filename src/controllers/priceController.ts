@@ -54,10 +54,10 @@ const priceController = {
   },
 
   async newTrackedItem(req: Request, res: Response, next: NextFunction) {
-    const { url, selector, username, user_note, price, target_price } =
+    const { title, url, selector, username, user_note, price, target_price } =
       req.body;
 
-    if (!url || !selector || !username || !price || !target_price) {
+    if (!title || !url || !selector || !username || !price || !target_price) {
       return next({
         log: 'From priceController.newTrackedItem. Missing required fields.',
         status: 500,
@@ -66,6 +66,7 @@ const priceController = {
     }
 
     const response = await priceDb.newTrackedItem(
+      title,
       url,
       selector,
       username,
@@ -109,10 +110,13 @@ const priceController = {
   //   //update table with price, url and timestamp
   // },
   async updateProducts(req: Request, res: Response, next: NextFunction) {
-    const { username, url, user_note, target_price, notify } = req.body;
+    const { username, url, title, user_note, target_price, notify } = req.body;
     const updates: UpdateDetails[] = [];
     console.log(req.body);
 
+    if (title !== undefined) {
+      updates.push({ field: 'title', value: title });
+    }
     if (user_note !== undefined) {
       updates.push({ field: 'user_note', value: user_note });
     }
@@ -137,7 +141,11 @@ const priceController = {
     //   whereClause: ['username = $1', 'url = $2'],
     // };
 
+    console.log('Should not return');
+
     const response = await priceDb.updateProductInfo(username, url, updates);
+
+    console.log('Response', response);
 
     if ('code' in response) {
       return next({

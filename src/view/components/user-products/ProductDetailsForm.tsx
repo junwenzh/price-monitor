@@ -23,12 +23,14 @@ import { Checkbox } from '../ui/checkbox';
 import { useToast } from '../ui/use-toast';
 
 const formSchema = z.object({
+  title: z.string(),
   targetPrice: z.string(),
   notes: z.string().max(1000),
   notify: z.boolean(),
 });
 
 type ProductDetailsFormProps = {
+  title: string;
   url: string;
   targetPrice: number;
   currentPrice: number;
@@ -37,6 +39,7 @@ type ProductDetailsFormProps = {
 };
 
 export function ProductDetailsForm({
+  title,
   url,
   targetPrice,
   currentPrice,
@@ -52,6 +55,7 @@ export function ProductDetailsForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      title: title || '',
       targetPrice: `${targetPrice}`,
       notes: notes,
       notify: notify,
@@ -68,6 +72,7 @@ export function ProductDetailsForm({
         body: JSON.stringify({
           username,
           url,
+          title: values.title,
           user_note: values.notes,
           target_price: values.targetPrice,
           notify: values.notify,
@@ -155,6 +160,21 @@ export function ProductDetailsForm({
               </FormLabel>
               <FormControl className="col-span-3">
                 <Input type="number" {...field} className="w-60" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem className="grid grid-cols-4 gap-4 space-y-0">
+              <FormLabel className="col-span-1 text-right pr-4 mt-2">
+                Item Name
+              </FormLabel>
+              <FormControl className="col-span-3">
+                <Input {...field} className="w-60" />
               </FormControl>
               <FormMessage />
             </FormItem>

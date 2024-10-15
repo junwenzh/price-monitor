@@ -23,8 +23,8 @@ export default function ProductDetails() {
         </CardHeader>
         <CardContent className="space-y-2">
           <div>
-            <p>URL:</p>
-            <p>{state.url}</p>
+            <p>Item Name:</p>
+            <p>{state.title}</p>
           </div>
           <div>
             <p>Current Price: </p>
@@ -34,6 +34,7 @@ export default function ProductDetails() {
         <CardContent>
           <ProductDetailsForm
             url={state.url}
+            title={state.title}
             currentPrice={state.current_price}
             targetPrice={state.target_price}
             notes={state.notes}
