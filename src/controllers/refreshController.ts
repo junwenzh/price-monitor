@@ -34,7 +34,9 @@ const refreshController = {
       return next();
     }
 
-    res.locals.urls = result;
+    const latestPrices = result.filter(record => record.rownumber === 1);
+
+    res.locals.urls = latestPrices;
 
     next();
   },
@@ -70,9 +72,9 @@ const refreshController = {
     next: NextFunction
   ) {
     const urls = res.locals.urls as UrlsAndSelectors[];
-    const fetchUrls = urls.filter(url => url.use_fetch === false);
+    const urlsToScrape = urls.filter(url => url.use_fetch === false);
 
-    for (const url of fetchUrls) {
+    for (const url of urlsToScrape) {
       const result = await playwrightConnection.getPrice(url.url, url.selector);
       if (result === 'Connection error') {
         url.valid_url = false;

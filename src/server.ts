@@ -67,11 +67,17 @@ app.use(
 app.listen(port, '0.0.0.0', () => {
   console.log(`App listening at http://localhost:${port}`);
 
+  const getDateTime = () => {
+    const date = Date.now();
+    const dateString = date.toLocaleString();
+    return dateString;
+  };
+
   setInterval(
     () => {
-      console.log('Initiating refresh');
+      console.log(`${getDateTime()}: Initiating refresh`);
       fetch('http://localhost:8084/api/refresh').then(() =>
-        console.log('Completed refresh')
+        console.log(`${getDateTime()}: Completed refresh`)
       );
     },
     1000 * 60 * 60 * 8
