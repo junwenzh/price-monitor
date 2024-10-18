@@ -35,7 +35,7 @@ const refreshController = {
     }
 
     res.locals.urls = result;
-    console.log(result);
+
     next();
   },
 

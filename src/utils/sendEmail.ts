@@ -15,8 +15,8 @@ interface EmailParams {
 const awsConfig = {
   apiVersion: '2010-12-01',
   region: 'us-east-1',
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  accessKeyId: process.env.AWS_ACCESSKEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESSKEY,
 };
 
 const ses = new AWS.SES(awsConfig);
@@ -93,7 +93,7 @@ async function sendEmail(emailParams: EmailParams) {
                         <h2 class="text-lg font-semibold">${emailParams.item}</h2>
                         <h2 class="text-lg font-semibold">${emailParams.currentPrice}</h2>
                         <p>
-                          Price when tracked:{' '}
+                          Price when tracked: 
                           <span class="line-through">${emailParams.oldPrice}</span>
                         </p>
                         <p>
