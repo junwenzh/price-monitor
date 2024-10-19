@@ -13,7 +13,7 @@ type UrlsAndSelectors = {
   use_fetch: boolean;
   price: number;
   price_timestamp: Date;
-  rownumber: number;
+  rownumber: string;
   valid_url?: boolean;
   valid_selector?: boolean;
   latest_price?: number;
@@ -34,7 +34,7 @@ const refreshController = {
       return next();
     }
 
-    const latestPrices = result.filter(record => record.rownumber === 1);
+    const latestPrices = result.filter(record => record.rownumber === '1');
 
     res.locals.urls = latestPrices;
 
@@ -76,6 +76,7 @@ const refreshController = {
 
     for (const url of urlsToScrape) {
       const result = await playwrightConnection.getPrice(url.url, url.selector);
+
       if (result === 'Connection error') {
         url.valid_url = false;
       } else if (
@@ -112,6 +113,7 @@ const refreshController = {
       const users = userProductMap.get(url.url) || []; // array
       // for each user, compare the target price
       users.forEach(user => {
+        console.log(user);
         if (user.target_price >= url.latest_price!) {
           sendEmail({
             to: user.email,

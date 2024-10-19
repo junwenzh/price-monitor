@@ -1,5 +1,5 @@
-import express, { Request, Response } from 'express';
 import refreshController from '@/controllers/refreshController';
+import express, { Request, Response } from 'express';
 const router = express.Router();
 
 router.get(
@@ -10,7 +10,6 @@ router.get(
   refreshController.checkTargetPrice,
   refreshController.updateDatabase,
   (_req: Request, res: Response) => {
-    console.log('Done refreshing');
     res.end();
   }
 );

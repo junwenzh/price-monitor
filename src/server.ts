@@ -68,7 +68,7 @@ app.listen(port, '0.0.0.0', () => {
   console.log(`App listening at http://localhost:${port}`);
 
   const getDateTime = () => {
-    const date = Date.now();
+    const date = new Date();
     const dateString = date.toLocaleString();
     return dateString;
   };
