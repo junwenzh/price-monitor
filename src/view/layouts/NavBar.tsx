@@ -56,7 +56,12 @@ export default function NavBar() {
           {isLoggedIn ? (
             <NavigationMenu>
               <NavigationMenuList className="flex">
-                <NavigationMenuItem>Welcome {loggedInUser}</NavigationMenuItem>
+                <NavigationMenuItem>
+                  Welcome{' '}
+                  <Link to="/settings" className="font-bold text-blue">
+                    {loggedInUser}
+                  </Link>
+                </NavigationMenuItem>
                 <NavigationMenuItem>
                   <Button variant="outline" onClick={handleLogOut}>
                     Log Out

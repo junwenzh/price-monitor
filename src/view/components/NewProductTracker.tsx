@@ -202,7 +202,10 @@ export default function NewProductTracker() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="text-2xl my-4">Link to the product page</div>
+      <div className="text-2xl my-4">Track a New Item</div>
+      <div className="text-sm my-4">
+        Enter the URL of the product you're looking to track below.
+      </div>
       <form className="flex flex-col md:flex-row" onSubmit={handleUrlSubmit}>
         <Input
           type="text"
@@ -212,28 +215,18 @@ export default function NewProductTracker() {
           onChange={handleUrlChange}
           className="ring-2 ring-slate-200 rounded p-2 max-w-2xl text-center w-screen md:w-[768px] mx-4"
         />
-        <Button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded transition duration-150 ease-in-out active:bg-blue-600 active:scale-95 mx-4"
-        >
-          Search
-        </Button>
+        <Button type="submit">Search</Button>
       </form>
       <form
         className="flex flex-col items-center gap-4 w-full"
         onSubmit={handleCoordinatesSubmit}
       >
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded transition duration-150 ease-in-out active:bg-blue-600 active:scale-95"
-        >
-          Send Coordinates
-        </button>
+        <Button type="submit">Send Coordinates</Button>
       </form>
       {showConfirmation && (
         <div>
           <p>Confirm that the price of this item is {price}.</p>
-          <button onClick={handleConfirm}>Confirm</button>
+          <Button onClick={handleConfirm}>Confirm</Button>
         </div>
       )}
 
@@ -262,14 +255,13 @@ export default function NewProductTracker() {
             onChange={e => setUserNote(e.target.value)}
             className="ring-2 ring-slate-200 rounded p-2"
           />
-          <button type="submit">Submit Price and Note</button>
+          <Button type="submit">Submit Price and Note</Button>
         </form>
       )}
 
       {showPostSubmitOptions && (
         <div>
-          <button
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          <Button
             onClick={() => {
               // Reset all fields and keep the user on the form to submit another request
               setShowPriceForm(true);
@@ -280,9 +272,8 @@ export default function NewProductTracker() {
             }}
           >
             Submit Another Price Request
-          </button>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          </Button>
+          <Button
             onClick={() => {
               // Potentially navigate to a previous page or out of the current form
               navigate(-1); // Assuming you're using React Router
@@ -290,7 +281,7 @@ export default function NewProductTracker() {
             }}
           >
             Go Back
-          </button>
+          </Button>
         </div>
       )}
 

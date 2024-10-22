@@ -1,79 +1,123 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { logIn } from '../slices/loggedInSlice';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+import { z } from 'zod';
+import { Button } from './ui/button';
+import {
+  Form,
+  FormControl,
+  // FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from './ui/form';
+import { Input } from './ui/input';
+import { RootState } from '../store';
+import { useToast } from './ui/use-toast';
+import Container from './ui/container';
+
+const formSchema = z.object({
+  password: z.string(),
+  email: z.string(),
+});
 
 export default function UserSettings() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const username = useSelector((state: RootState) => state.isLoggedIn.username);
+  // const [email, setEmail] = useState('');
+  const { toast } = useToast();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      password: '',
+      email: '',
+    },
+  });
+
+  useEffect(() => {
+    fetch(`/api/users/${username}`)
+      .then(res => res.json())
+      .then(data => {
+        // setEmail(data.email);
+        form.reset({ email: data.email });
+        console.log(data);
+      });
+  }, []);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { password, email } = values;
 
     try {
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
+      const response = await fetch('/api/users/', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, email }),
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log(data);
-        localStorage.setItem(
-          'token',
-          JSON.stringify({
-            value: data.token,
-            expiry: new Date().getTime() + 3600,
-          })
-        );
-        localStorage.setItem(
-          'userDetails',
-          JSON.stringify({
-            username: data.username,
-            //            email: data.email,
-          })
-        );
-        dispatch(logIn({ username: data.username }));
-        navigate('/');
+        toast({
+          title: 'Updated user',
+        });
       } else {
-        console.error('Login failed');
+        console.error('Update failed');
+        toast({
+          title: 'Update failed',
+        });
       }
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error('Error updating the user:', error);
+      toast({
+        title: 'Update failed',
+      });
     }
-  };
+  }
 
   return (
-    <div>
-      <h2>Log In</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username:</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
+    <Container>
+      <h2 className="text-2xl mb-10">Update Your User Log-In Information</h2>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 gap-4 space-y-0">
+                <FormLabel className="col-span-1 text-right pr-4 mt-2">
+                  Email
+                </FormLabel>
+                <FormControl className="col-span-3">
+                  <Input {...field} className="w-60" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 gap-4 space-y-0">
+                <FormLabel className="col-span-1 text-right pr-4 mt-2">
+                  Password
+                </FormLabel>
+                <FormControl className="col-span-3">
+                  <Input type="password" {...field} className="w-60" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <button type="submit">Log In</button>
-      </form>
-    </div>
+          <div className="flex justify-center">
+            <Button type="submit" className="w-full my-8">
+              Submit
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </Container>
   );
 }

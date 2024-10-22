@@ -56,6 +56,8 @@ class UserDB {
   ): Promise<User | DatabaseResponseError> {
     const user = await this.getUser(username);
 
+    console.log('user', user);
+
     if ('code' in user) {
       return user;
     }
@@ -63,12 +65,18 @@ class UserDB {
     const params = [username, password || user.password, email || user.email];
 
     const sql = `
-      UPDATE USER
+      UPDATE USERS
       SET password = $2, email = $3
       WHERE username = $1
+      RETURNING username, email
     `;
 
+    console.log('sql', sql);
+
     const response = await this.db.query(sql, params);
+
+    console.log('response', response);
+
     return this.validateQueryResponse(response);
   }
 

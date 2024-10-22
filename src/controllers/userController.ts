@@ -24,6 +24,34 @@ type User = {
 };
 
 const userController = {
+  async getUser(req: Request, res: Response, next: NextFunction) {
+    const username = req.params.username;
+
+    if (!username) {
+      next({
+        log: 'From userController.getUser. Missing username',
+        status: 400,
+        message: 'Please provide a username',
+      });
+      return;
+    }
+
+    const result = await userDb.getUser(username);
+
+    if ('code' in result) {
+      next({
+        log: `From userController.getUser. ${result.message}`,
+        status: 500,
+        message: result.message,
+      });
+      return;
+    }
+
+    res.locals.username = result.username;
+    res.locals.email = result.email;
+    next();
+  },
+
   async createUser(req: Request, res: Response, next: NextFunction) {
     const { username, email, password }: User = req.body;
 
@@ -64,7 +92,15 @@ const userController = {
       });
     }
 
-    const result = await userDb.updateUser(username, password, email);
+    // add encryption to password
+
+    const hashedPassword = await bcrypt.hash(password || '', 10);
+
+    const result = await userDb.updateUser(
+      username,
+      password ? hashedPassword : undefined,
+      email
+    );
 
     if ('code' in result) {
       return next({

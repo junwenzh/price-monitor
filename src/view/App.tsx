@@ -14,6 +14,7 @@ import Login from './components/UserLogin';
 import Home from './Home';
 import Layout from './layouts/Layout';
 import ProductDetails from './components/user-products/ProductDetails';
+import UserSettings from './components/UserSettings';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,6 +25,7 @@ const router = createBrowserRouter(
       <Route path="newproduct" element={<NewProductTracker />} />
       <Route path="trackinghistory" element={<TrackingHistory />} />
       <Route path="productdetails" element={<ProductDetails />} />
+      <Route path="settings" element={<UserSettings />} />
     </Route>
   )
 );
